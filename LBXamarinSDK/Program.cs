@@ -87,6 +87,7 @@ namespace LBXamarinSDK
     {
         private static void Main(string[] args)
         {
+            // Some change in the code, Blarg blarg, blarg.
             Gateway.SetServerBaseURL(new Uri("http://10.0.0.27:3000/api/"));
             Gateway.SetDebugMode(true);
 
