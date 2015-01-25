@@ -1,0 +1,53 @@
+{
+'models': [
+<% for (var modelName in models) {
+     var meta = models[modelName];
+     modelName = modelName[0].toUpperCase() + modelName.slice(1);
+-%>
+{
+  'name' : '<%-: modelName  %>',
+  'plural' : '<%-: meta.pluralName  %>',
+  'base' :  '<%-:meta.baseModel %>',
+  'idInjection' : <% if(meta.isGenerated){%>true<% }else { %>false<% } %>,
+  'properties' : {
+<% for(var param in meta.params){ -%>
+        '<%-: param   %>': { <% var name = meta.params[param].type.name%> <%if(name==null) name = meta.params[param].type[0].name%>
+            'type' : '<%-: name %>',
+            'required' : <%: if(!meta.params[param].required){%>false<% }else {%> true<% } %>,
+            'isId' : <%: if(!meta.params[param].id){%>false<% }else {%> true<% } %>,
+            'isArray' : <%: if(!meta.params[param].type.prototype){%>true <% }else {%> false<% } %>
+        }<% if(!(meta.params[param] === meta.params[Object.keys(meta.params)[Object.keys(meta.params).length-1]])){ %>,<% } %>
+<% }; -%>
+    },
+    'validations': [],
+    'relations': {},
+    'acls': [],
+    'methods':
+    {
+<% for(var action in meta.methods) {
+     var methodName = meta.methods[action].name.split('.').join('$');
+-%>
+        '<%-: methodName  %>': {
+          'url': ' <%-: meta.methods[action].getFullPath()  %>',
+          'method': '<%-: meta.methods[action].getHttpMethod()  %>',
+          'params': {
+<%  for(var acc in meta.methods[action].accepts) { -%>
+<% if(typeof(meta.methods[action].accepts[acc].http) === "function") continue -%>
+<% var paramPlacement = "query" -%>
+<% if(typeof(meta.methods[action].accepts[acc].http) != "undefined") paramPlacement = meta.methods[action].accepts[acc].http.source -%>
+             '<%- meta.methods[action].accepts[acc].arg %>' : {'type' : '<%-: meta.methods[action].accepts[acc].type %>', 'placement' : '<%-: paramPlacement %>'}<% if(!(meta.methods[action].accepts[acc] === meta.methods[action].accepts[Object.keys(meta.methods[action].accepts)[Object.keys(meta.methods[action].accepts).length-1]])){ %>,<% } %>
+<% }; -%>
+          },
+          'returns': {
+<%  for(var ret in meta.methods[action].returns) { -%> <%if(meta.methods[action].returns[ret].arg==null) break;%>
+          '<%- meta.methods[action].returns[ret].arg %>' : '<%-: meta.methods[action].returns[ret].type %>'<% if(!(meta.methods[action].returns[ret] === meta.methods[action].returns[Object.keys(meta.methods[action].returns)[Object.keys(meta.methods[action].returns).length-1]])){ %>,<% } %>,
+           'isArray': <% if (meta.methods[action].isReturningArray()) { %>true<%}else {%>false<% } %>
+<% }; -%>
+          }
+       }<% if(!(meta.methods[action] === meta.methods[Object.keys(meta.methods)[Object.keys(meta.methods).length-1]])){ %>,<% } %>
+<%  };  %>
+    }
+}<% if(!(meta === models[Object.keys(models)[Object.keys(models).length-1]])){ %>,<% } %>
+<% }  -%>
+]
+}

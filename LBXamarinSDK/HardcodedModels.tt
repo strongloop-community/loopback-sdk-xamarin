@@ -1,0 +1,262 @@
+﻿<#@ template language="C#" hostSpecific="false"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+
+// Uncomment the following line when debugging 
+<#@ assembly name="C:/Users/PerfectedTech/Documents/visual studio 2013/Projects/LBXamarinSDK/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"#>
+// ^^
+
+<#@ import namespace="Newtonsoft.Json" #>
+<#@ import namespace="Newtonsoft.Json.Linq" #>
+using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using RestSharp.Portable;
+using LBXamarinSDK;
+using LBXamarinSDK.LBRepo;
+using System.Net.Http;
+using System.Threading;
+
+namespace LBXamarinSDK
+{
+	public class ExistenceResponse
+    {
+        [Newtonsoft.Json.JsonProperty("exists")]
+        public bool exists { get; set; }
+    }
+
+    public class CountResponse
+    {
+        [Newtonsoft.Json.JsonProperty("count")]
+        public int count { get; set; }
+    }
+	
+	public class Gateway
+    {
+        private static Uri BASE_URL = new Uri("http://10.0.0.20:3000/api/");
+		
+		private static RestClient _client = new RestClient {BaseUrl = BASE_URL};
+        private static string _accessToken = null;
+        private static bool errorFlag = false;
+		private static bool debugMode = false;
+        private static CancellationTokenSource cts = new CancellationTokenSource();
+		private static int timeout = 6000;
+
+		public static void SetDebugMode(bool isDebugMode)
+		{
+			debugMode = isDebugMode;
+            // **** VITAL! DO NOT REMOVE! ********
+            Console.WriteLine("*******************************************************************************");
+            Console.WriteLine("** SDK Gateway constructor. If something doesn't work it's Chayim's fault.   **");
+            Console.WriteLine("*******************************************************************************\n");
+            // **** ^^^ VITAL! DO NOT REMOVE! ********
+		}
+		
+		private static void ResetCancellationToken()
+		{
+			cts = new CancellationTokenSource();
+            cts.CancelAfter(timeout);
+		}
+
+        public static void SetTimeout(int timeoutMilliseconds = 6000)
+        {
+			timeout = timeoutMilliseconds;
+			ResetCancellationToken();
+        }
+		
+        public static bool lastRequestHadError()
+        {
+            return errorFlag;
+        }
+        public static void SetServerBaseURL(Uri baseUrl)
+        {
+            BASE_URL = baseUrl;
+            _client.BaseUrl = baseUrl;
+        }
+
+        public static void SetAccessToken(AccessToken accessToken)
+        {
+            if (accessToken != null)
+                _accessToken = accessToken.id;
+        }
+
+
+        public static async Task<bool> isConnected(int timeoutMilliseconds = 6000)
+		{
+			
+			SetTimeout(timeoutMilliseconds);
+			cts.Token.ThrowIfCancellationRequested();
+			try
+			{
+				var request = new RestRequest ("/", new HttpMethod ("GET"));
+				var response = await _client.Execute<JObject>(request, cts.Token).ConfigureAwait(false);
+				if (response != null)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}
+			catch(Exception e)
+			{
+				if (debugMode)
+                    Console.WriteLine("-------- >> DEBUG: Error: " + e.Message + " >>");	 
+				return false;
+			}
+		}
+
+        public static void ResetAccessToken()
+        {
+            _accessToken = null;
+        }
+        
+        // REST SHARP CONTEXT
+		public static async Task<T> MakeRequest<T>(RestRequest request)
+		{
+            ResetCancellationToken();
+			cts.Token.ThrowIfCancellationRequested();
+
+		    try
+		    {
+                var response = await _client.Execute<T>(request, cts.Token).ConfigureAwait(false);
+		        errorFlag = false;
+		        return response.Data;
+		    }
+		    catch (OperationCanceledException e)
+		    {
+                if (debugMode)
+                    Console.WriteLine("-------- >> DEBUG: Timeout, no response from server: " + e.Message + " >>");	 
+		    }
+		    catch (Exception e)
+		    {
+		        errorFlag = true;
+				if(debugMode)
+					Console.WriteLine("-------- >> DEBUG: Error performing request: " + e.Message + " >>");	     
+		    }
+
+            return default(T);
+		}
+
+        public static async Task<T> PerformRequest<T>(string APIUrl, string json, string method = "POST", IDictionary<string, string> queryStrings = null)
+		{
+			if(debugMode)
+				Console.WriteLine("-------- >> DEBUG: Performing " + method + " request, Json: " + json);
+
+			
+		    RestRequest request = null;
+            request = new RestRequest(APIUrl, new HttpMethod(method));
+
+            if (queryStrings != null)
+            {
+                foreach (var query in queryStrings)
+                {
+                    if (query.Value != "")
+                    {
+                        request.AddParameter(query.Key, query.Value, ParameterType.QueryString);
+                    }
+                }
+            }
+
+            if (!String.IsNullOrEmpty(_accessToken))
+            {
+                request.AddHeader("Authorization", _accessToken);
+            }
+
+			if (method == "POST" || method == "PUT")
+            {
+				request.AddHeader("ContentType", "application/json");
+				request.AddParameter ("application/json", json, ParameterType.RequestBody);
+			}
+
+			try
+			{
+				var response = await MakeRequest<T>(request).ConfigureAwait(false);
+				return response;
+			}
+            catch(Exception e)
+			{
+                errorFlag = true;
+                if (debugMode)
+                    Console.WriteLine("-------- >> DEBUG: Error performing request: " + e.Message + " >>");	     
+				return default(T);
+			}     
+            
+		}
+
+        // T is the expected return type, U is the input type. E.g. U is cat, T is cat
+        public static async Task<T> PerformPostRequest<U, T>(U objToPost, string APIUrl, IDictionary<string, string> queryStrings = null)
+        {
+            var res = await PerformRequest<T>(APIUrl, JsonConvert.SerializeObject(objToPost), "POST", queryStrings).ConfigureAwait(false);
+            return res;
+        }
+
+        // T is the expected return type. For example "cat" for get or "cat[]" for get all
+        public static async Task<T> PerformGetRequest<T>(string APIUrl, IDictionary<string, string> queryStrings = null)
+        {	
+            var res = await PerformRequest<T>(APIUrl, "", "GET", queryStrings).ConfigureAwait(false);
+            return res;
+        }
+
+        // T is the expected return type, U is the input type. E.g. U is cat, T is cat
+        public static async Task<T> PerformPutRequest<U, T>(U objToPut, string APIUrl, IDictionary<string, string> queryStrings = null)
+        {
+            var res = await PerformRequest<T>(APIUrl, JsonConvert.SerializeObject(objToPut), "PUT", queryStrings).ConfigureAwait(false);
+            return res;
+        }
+    }
+
+	public abstract class Model
+    {
+        public virtual String getID()
+        {
+            return "";
+        }
+    }
+
+	public class AccessToken : Model
+    {
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
+        public string id { get; set; }
+
+        [JsonProperty("ttl", NullValueHandling = NullValueHandling.Ignore)]
+        public long ttl { get; set; }
+
+
+        // ON NULL should it be date.now() or something?
+        [JsonProperty("created", NullValueHandling = NullValueHandling.Ignore)]
+        public DateTime created { get; set; }
+
+        [JsonProperty("userID", NullValueHandling = NullValueHandling.Ignore)]
+        public string userID { get; set; }
+
+		public override String getID()
+        {
+            return id;
+        }
+
+		public static implicit operator AccessToken(JObject jObj)
+        {
+            return JsonConvert.DeserializeObject<AccessToken>(jObj.ToString());
+        }
+    }
+
+
+	public class GeoPoint : Model
+	{
+		// Must be leq than 90: add attributes or setter
+		[JsonProperty("lat", NullValueHandling = NullValueHandling.Ignore)]
+		public double Latitude { get; set; }
+
+		[JsonProperty("lng", NullValueHandling = NullValueHandling.Ignore)]
+		public double Longtitude { get; set; }
+	}
+}

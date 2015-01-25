@@ -1,0 +1,124 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".cs"#>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+
+// Uncomment the following line when debugging
+<#@assembly name="C:/Users/PerfectedTech/Documents/visual studio 2013/Projects/LBXamarinSDK/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"#>
+// ^^
+
+<#@ import namespace="Newtonsoft.Json" #>
+<#@ import namespace="Newtonsoft.Json.Linq" #>
+<#@ parameter name="jsonModel" type="System.String" #>
+
+
+<#
+// Uncomment the following two lines when debugging:
+String inputPath = "C:/Users/PerfectedTech/Documents/visual studio 2013/Projects/LBXamarinSDK/LBXamarinSDK/bin/Debug";
+String jsonModel = File.ReadAllText(inputPath + "/jsonDefs.txt");
+// ^^
+#>
+
+namespace LBXamarinSDK
+{
+<#
+// Iterate over all the models to create a class for them
+JObject modelsJSON = JObject.Parse(jsonModel);
+List<String> modelNames = modelsJSON.First.First.Select(x => (string)x.First).ToList();
+foreach (var model in modelsJSON.First.First)
+{
+	// Determine model name and inheritence, avoid self inheritence
+	String modelName = model.First.First.ToString();
+	String inheritenceString = (String)model.ElementAt(2).First == "" || (String)model.ElementAt(2).First == "PersistedModel" ? "Model" : (String)model.ElementAt(2).First;
+	if(inheritenceString == modelName || !modelNames.Contains(inheritenceString))
+	{
+		inheritenceString = "Model";
+	}
+#>
+	public class <#= modelName #> : <#= inheritenceString#>
+	{
+<#
+		String IDField = "";
+		JObject fieldsObj = JObject.Parse(model.ElementAt(4).First.ToString());
+        List<string> fields = fieldsObj.Properties().Select(p => p.Name).ToList();
+		List<bool> fieldIsArrayList = new List<bool>();
+        List<string> fieldsNecessities = new List<string>();
+        List<string> fieldsTypes = new List<string>();
+		foreach (var fieldProperties in model.ElementAt(4).First)
+        {
+			fieldsNecessities.Add((String)fieldProperties.First.First.Next.First);
+			fieldsTypes.Add((String)fieldProperties.First.First.First);
+			fieldIsArrayList.Add((bool)fieldProperties.First.ElementAt(3).First);
+			if ((bool)fieldProperties.First.ElementAt(2).First)
+            {
+				JObject tempObj = JObject.Parse("{" + fieldProperties.ToString() + "}");
+				IDField = (String)tempObj.Properties().Select(p => p.Name).First();
+			}
+		}
+		string idType = "string";
+        for (int i = 0; i < fields.Count; ++i)
+        {
+			if(fieldsNecessities.ElementAt(i) == "True") {#>		 //Required
+<#}
+			#>		[JsonProperty ("<#=fields.ElementAt(i)#>", NullValueHandling = NullValueHandling.Ignore)]
+<#			
+			#>		public <#=fields.ElementAt(i) == IDField ? idType : jsTypeToCsType(fieldsTypes.ElementAt(i))#><#if(fieldIsArrayList.ElementAt(i)){#>[]<#}#> <#=createLegalVariable(fields.ElementAt(i))#> { get; set; }
+
+<#}#>
+		public override string getID()
+		{
+			return <# if((bool)model.ElementAt(3).First == true) {#>id<#}else{#><##><#=IDField#><#}#>;
+		}
+	}
+<#}#>
+}
+// Eof
+<#+
+
+private string createLegalVariable(string input)
+{
+	string avoidFirstCharNumber = Char.IsLetter(input.ElementAt(0)) ? "" : "var";
+
+	string result = avoidFirstCharNumber + input;
+
+	string[] invalidVariableNames = {"base", "int", "long", "double" /* TODO: include all key words */};
+
+	IList<string> invalidVariableNamesList = new List<string>(invalidVariableNames);
+
+	if(invalidVariableNamesList.Contains(input))
+    {
+		result = "field" + result;
+    }
+
+	return result;
+}
+
+
+public String jsTypeToCsType(String JSType)
+{
+	if(JSType == "Number")
+		return "double";
+
+	if(JSType == "GeoPoint")
+		return "GeoPoint";
+
+	if(JSType == "Buffer")
+		return "IList<int>";
+
+	if(JSType == "String")
+		return "String";
+
+	if(JSType == "Boolean")
+		return "bool";
+
+	if(JSType == "Date")
+		return "DateTime";
+
+	if(JSType == "ObjectID")
+		return "String";
+
+	return "Object";
+}#>

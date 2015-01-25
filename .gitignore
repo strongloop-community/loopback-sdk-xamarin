@@ -1,0 +1,8 @@
+lb-xm/node_modules/
+LBXamarinSDK/DynamicModels.cs
+lb-xm/.idea/
+LBXamarinSDK/obj/
+*.txt
+LBXamarinSDK/bin/
+LBXamarinSDK/DynamicRepos.cs
+LBXamarinSDK/HardcodedModels.cs
