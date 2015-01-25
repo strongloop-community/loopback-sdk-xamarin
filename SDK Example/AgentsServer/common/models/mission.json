@@ -1,0 +1,31 @@
+{
+  "name": "Mission",
+  "plural": "Missions",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "properties": {
+    "priority": {
+      "type": "number",
+      "required": true
+    },
+    "description": {
+      "type": "string",
+      "required": true
+    },
+    "location": {
+      "type": "geopoint",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [
+  {
+      "accessType": "WRITE",
+      "principalType": "ROLE",
+      "principalId": "$unauthenticated",
+      "permission": "DENY"
+    }
+  ],
+  "methods": []
+}

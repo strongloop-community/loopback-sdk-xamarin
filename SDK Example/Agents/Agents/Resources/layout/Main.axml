@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <TextView
+        android:text="Login"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="65.1dp"
+        android:layout_marginLeft="10.0dp"
+        android:id="@+id/textView2" />
+    <EditText
+        android:inputType="textEmailAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/editText2" />
+    <TextView
+        android:text="Password"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView1"
+        android:layout_marginRight="65.1dp"
+        android:layout_marginLeft="10.0dp"
+        android:layout_marginBottom="0.0dp" />
+    <EditText
+        android:inputType="textPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/editText1" />
+    <Button
+        android:text="Login"
+        android:layout_height="wrap_content"
+        android:id="@+id/button1"
+        android:layout_marginRight="65.1dp"
+        android:layout_marginLeft="10.0dp"
+        android:layout_width="384.7dp" />
+    <Button
+        android:text="Logout"
+        android:layout_width="384.1dp"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="65.1dp"
+        android:layout_marginLeft="10.0dp"
+        android:id="@+id/button2" />
+    <TextView
+        android:text="Login Status"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="match_parent"
+        android:layout_height="31.9dp"
+        android:layout_marginRight="65.1dp"
+        android:layout_marginLeft="20.0dp"
+        android:id="@+id/textView3" />
+    <TextView
+        android:text="Missions"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="match_parent"
+        android:layout_height="42.2dp"
+        android:id="@+id/textView4"
+        android:layout_marginTop="20.0dp"
+        android:layout_marginLeft="20.0dp" />
+    <ListView
+        android:minWidth="25px"
+        android:minHeight="25px"
+        android:layout_width="766.1dp"
+        android:layout_height="249.3dp"
+        android:layout_marginLeft="20.0dp"
+        android:id="@+id/listView1"
+        android:fastScrollEnabled="true"
+        android:smoothScrollbar="true"
+        android:drawSelectorOnTop="false"
+        android:background="#ff001e4f"
+        android:scrollbars="vertical"
+        android:scrollbarStyle="insideOverlay"
+        android:verticalScrollbarPosition="left"
+        android:layout_marginBottom="0.0dp"
+        android:longClickable="false" />
+    <TextView
+        android:text="Mission Priority"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="match_parent"
+        android:layout_height="27.4dp"
+        android:layout_marginLeft="20.0dp"
+        android:id="@+id/textView7"
+        android:layout_marginBottom="0.0dp" />
+    <TextView
+        android:text="Mission Geolocation"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="match_parent"
+        android:layout_height="28.5dp"
+        android:layout_marginLeft="20.0dp"
+        android:id="@+id/textView8" />
+    <TextView
+        android:text="Create Mission"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="match_parent"
+        android:layout_height="38.6dp"
+        android:layout_marginTop="10.0dp"
+        android:layout_marginLeft="20.0dp"
+        android:id="@+id/textView6" />
+    <TextView
+        android:text="Mission Description"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="match_parent"
+        android:layout_height="30.0dp"
+        android:layout_marginLeft="40.0dp"
+        android:id="@+id/textView9" />
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="40.0dp"
+        android:id="@+id/editText3" />
+    <TextView
+        android:text="Mission Priority"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="match_parent"
+        android:layout_height="30.0dp"
+        android:layout_marginLeft="40.0dp"
+        android:layout_marginTop="20.0dp"
+        android:id="@+id/textView10"
+        android:layout_marginBottom="3.5dp" />
+    <EditText
+        android:inputType="numberSigned"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="40.0dp"
+        android:id="@+id/editText4" />
+    <TextView
+        android:text="Mission Location"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="match_parent"
+        android:layout_height="28.5dp"
+        android:layout_marginTop="20.0dp"
+        android:layout_marginLeft="40.0dp"
+        android:id="@+id/textView11" />
+    <TextView
+        android:text="Latitude"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="match_parent"
+        android:layout_height="28.0dp"
+        android:layout_marginLeft="60.0dp"
+        android:id="@+id/textView12lati" />
+    <EditText
+        android:inputType="numberSigned"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="60.0dp"
+        android:id="@+id/editText5" />
+    <TextView
+        android:text="Longtitude"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="match_parent"
+        android:layout_height="24.7dp"
+        android:layout_marginLeft="60.0dp"
+        android:id="@+id/textView12" />
+    <EditText
+        android:inputType="numberSigned"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="60.0dp"
+        android:id="@+id/editText6" />
+    <Button
+        android:text="Create Mission"
+        android:layout_width="300.0dp"
+        android:layout_height="50.0dp"
+        android:id="@+id/button3"
+        android:layout_marginLeft="20.0dp" />
+    <TextView
+        android:text="Creation Status"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="match_parent"
+        android:layout_height="28.4dp"
+        android:layout_marginLeft="20.0dp"
+        android:id="@+id/textView13" />
+    <TextView
+        android:text="Connected Status"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_width="match_parent"
+        android:layout_height="35.0dp"
+        android:layout_marginTop="5.0dp"
+        android:layout_marginLeft="20.0dp"
+        android:id="@+id/textView5" />
+</LinearLayout>
