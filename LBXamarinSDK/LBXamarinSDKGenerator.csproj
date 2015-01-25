@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{C9D8D106-D4C0-4875-9DD5-E1F300C4DCEC}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>LBXamarinSDK</RootNamespace>
     <AssemblyName>LBXamarinSDKGenerator</AssemblyName>
@@ -91,17 +91,17 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="DynamicRepos.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
+      <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>DynamicRepos.cs</LastGenOutput>
     </None>
     <None Include="DynamicModels.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
+      <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>DynamicModels.cs</LastGenOutput>
       <Parameters>&lt;%3fxml version="1.0" encoding="utf-16"%3f&gt;
 &lt;ArrayOfParameterStorage xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" /&gt;</Parameters>
     </None>
     <None Include="HardcodedModels.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
+      <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>HardcodedModels.cs</LastGenOutput>
       <Parameters>&lt;%3fxml version="1.0" encoding="utf-16"%3f&gt;
 &lt;ArrayOfParameterStorage xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" /&gt;</Parameters>

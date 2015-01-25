@@ -5,11 +5,13 @@
 <#@ import namespace="System.Collections.Generic" #>
 
 // Uncomment the following line when debugging 
-<#@ assembly name="C:/Users/PerfectedTech/Documents/visual studio 2013/Projects/LBXamarinSDK/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"#>
+<#/*@ assembly name="C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
 // ^^
 
 <#@ import namespace="Newtonsoft.Json" #>
 <#@ import namespace="Newtonsoft.Json.Linq" #>
+
+// Usings for all 3 templates
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
@@ -26,29 +28,30 @@ using System.Threading;
 
 namespace LBXamarinSDK
 {
+	// Custom response for basic CRUD operations
 	public class ExistenceResponse
     {
         [Newtonsoft.Json.JsonProperty("exists")]
         public bool exists { get; set; }
     }
-
     public class CountResponse
     {
         [Newtonsoft.Json.JsonProperty("count")]
         public int count { get; set; }
     }
 	
+	// Gateway: Communication with Server API
 	public class Gateway
     {
-        private static Uri BASE_URL = new Uri("http://10.0.0.20:3000/api/");
+        private static Uri BASE_URL = new Uri("http://10.0.0.1:3000/api/");
 		
 		private static RestClient _client = new RestClient {BaseUrl = BASE_URL};
         private static string _accessToken = null;
-        private static bool errorFlag = false;
 		private static bool debugMode = false;
         private static CancellationTokenSource cts = new CancellationTokenSource();
 		private static int timeout = 6000;
 
+		// Allow Console WriteLines to debug communication with server
 		public static void SetDebugMode(bool isDebugMode)
 		{
 			debugMode = isDebugMode;
@@ -59,6 +62,7 @@ namespace LBXamarinSDK
             // **** ^^^ VITAL! DO NOT REMOVE! ********
 		}
 		
+		/*** Cancellation Token methods, define a timeout for a server request ***/
 		private static void ResetCancellationToken()
 		{
 			cts = new CancellationTokenSource();
@@ -70,27 +74,25 @@ namespace LBXamarinSDK
 			timeout = timeoutMilliseconds;
 			ResetCancellationToken();
         }
-		
-        public static bool lastRequestHadError()
-        {
-            return errorFlag;
-        }
+		/* *** */
+
+		// Define server Base Url for API requests. Example: "http://10.0.0.1:3000/api/"
         public static void SetServerBaseURL(Uri baseUrl)
         {
             BASE_URL = baseUrl;
             _client.BaseUrl = baseUrl;
         }
 
+		// Sets an access token to be added as an authorization in all future server requests
         public static void SetAccessToken(AccessToken accessToken)
         {
             if (accessToken != null)
                 _accessToken = accessToken.id;
         }
 
-
+		// Performs a request to determine if connected to server
         public static async Task<bool> isConnected(int timeoutMilliseconds = 6000)
 		{
-			
 			SetTimeout(timeoutMilliseconds);
 			cts.Token.ThrowIfCancellationRequested();
 			try
@@ -114,12 +116,13 @@ namespace LBXamarinSDK
 			}
 		}
 
+		// Resets the authorization token
         public static void ResetAccessToken()
         {
             _accessToken = null;
         }
         
-        // REST SHARP CONTEXT
+		// Makes a request through restSharp to server
 		public static async Task<T> MakeRequest<T>(RestRequest request)
 		{
             ResetCancellationToken();
@@ -128,7 +131,6 @@ namespace LBXamarinSDK
 		    try
 		    {
                 var response = await _client.Execute<T>(request, cts.Token).ConfigureAwait(false);
-		        errorFlag = false;
 		        return response.Data;
 		    }
 		    catch (OperationCanceledException e)
@@ -138,7 +140,6 @@ namespace LBXamarinSDK
 		    }
 		    catch (Exception e)
 		    {
-		        errorFlag = true;
 				if(debugMode)
 					Console.WriteLine("-------- >> DEBUG: Error performing request: " + e.Message + " >>");	     
 		    }
@@ -146,15 +147,17 @@ namespace LBXamarinSDK
             return default(T);
 		}
 
+
+		// Parses a server request then makes it through MakeRequest
         public static async Task<T> PerformRequest<T>(string APIUrl, string json, string method = "POST", IDictionary<string, string> queryStrings = null)
 		{
 			if(debugMode)
 				Console.WriteLine("-------- >> DEBUG: Performing " + method + " request, Json: " + json);
 
-			
 		    RestRequest request = null;
             request = new RestRequest(APIUrl, new HttpMethod(method));
 
+			// Add query parameters to the request
             if (queryStrings != null)
             {
                 foreach (var query in queryStrings)
@@ -166,17 +169,20 @@ namespace LBXamarinSDK
                 }
             }
 
+			// Add authorization token to the request
             if (!String.IsNullOrEmpty(_accessToken))
             {
                 request.AddHeader("Authorization", _accessToken);
             }
 
+			// Add body parameters to the request
 			if (method == "POST" || method == "PUT")
             {
 				request.AddHeader("ContentType", "application/json");
 				request.AddParameter ("application/json", json, ParameterType.RequestBody);
 			}
 
+			// Make the request, return response
 			try
 			{
 				var response = await MakeRequest<T>(request).ConfigureAwait(false);
@@ -184,7 +190,6 @@ namespace LBXamarinSDK
 			}
             catch(Exception e)
 			{
-                errorFlag = true;
                 if (debugMode)
                     Console.WriteLine("-------- >> DEBUG: Error performing request: " + e.Message + " >>");	     
 				return default(T);
@@ -192,21 +197,21 @@ namespace LBXamarinSDK
             
 		}
 
-        // T is the expected return type, U is the input type. E.g. U is cat, T is cat
+        // T is the expected return type, U is the input type. E.g. U is Car, T is Car
         public static async Task<T> PerformPostRequest<U, T>(U objToPost, string APIUrl, IDictionary<string, string> queryStrings = null)
         {
             var res = await PerformRequest<T>(APIUrl, JsonConvert.SerializeObject(objToPost), "POST", queryStrings).ConfigureAwait(false);
             return res;
         }
 
-        // T is the expected return type. For example "cat" for get or "cat[]" for get all
+        // T is the expected return type. For example "Car" for get or "Car[]" for get all cars
         public static async Task<T> PerformGetRequest<T>(string APIUrl, IDictionary<string, string> queryStrings = null)
         {	
             var res = await PerformRequest<T>(APIUrl, "", "GET", queryStrings).ConfigureAwait(false);
             return res;
         }
 
-        // T is the expected return type, U is the input type. E.g. U is cat, T is cat
+        // T is the expected return type, U is the input type. E.g. U is Car, T is Car
         public static async Task<T> PerformPutRequest<U, T>(U objToPut, string APIUrl, IDictionary<string, string> queryStrings = null)
         {
             var res = await PerformRequest<T>(APIUrl, JsonConvert.SerializeObject(objToPut), "PUT", queryStrings).ConfigureAwait(false);
@@ -214,6 +219,7 @@ namespace LBXamarinSDK
         }
     }
 
+	// Base model for all LBXamarinSDK Models
 	public abstract class Model
     {
         public virtual String getID()
@@ -222,6 +228,7 @@ namespace LBXamarinSDK
         }
     }
 
+	// Access Token model
 	public class AccessToken : Model
     {
         [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
@@ -230,8 +237,6 @@ namespace LBXamarinSDK
         [JsonProperty("ttl", NullValueHandling = NullValueHandling.Ignore)]
         public long ttl { get; set; }
 
-
-        // ON NULL should it be date.now() or something?
         [JsonProperty("created", NullValueHandling = NullValueHandling.Ignore)]
         public DateTime created { get; set; }
 
@@ -243,16 +248,17 @@ namespace LBXamarinSDK
             return id;
         }
 
+		// TODO: Add this implicit operator to all models, hardcoded and dynamic
 		public static implicit operator AccessToken(JObject jObj)
         {
             return JsonConvert.DeserializeObject<AccessToken>(jObj.ToString());
         }
     }
 
-
+	// GeoPoint primitive loopback type
 	public class GeoPoint : Model
 	{
-		// Must be leq than 90: add attributes or setter
+		// Must be leq than 90: TODO: Add attributes or setter limitations
 		[JsonProperty("lat", NullValueHandling = NullValueHandling.Ignore)]
 		public double Latitude { get; set; }
 

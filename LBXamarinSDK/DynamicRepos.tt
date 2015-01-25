@@ -8,7 +8,7 @@
 <#@ import namespace="System.IO" #>
 
 // Uncomment the following line when debugging
-<#@ assembly name="C:/Users/PerfectedTech/Documents/visual studio 2013/Projects/LBXamarinSDK/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"#>
+<#/*@ assembly name="C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
 // ^^
 
 <#@ import namespace="Newtonsoft.Json" #>
@@ -17,8 +17,8 @@
 
 <#
 // Uncomment the following two lines when debugging:
-String inputPath = "C:/Users/PerfectedTech/Documents/visual studio 2013/Projects/LBXamarinSDK/LBXamarinSDK/bin/Debug";
-String jsonModel = File.ReadAllText(inputPath + "/jsonDefs.txt");
+//String inputPath = "C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/LBXamarinSDK/bin/Debug";
+//String jsonModel = File.ReadAllText(inputPath + "/jsonDefs.txt");
 // ^^
 
 JObject modelsJSON = JObject.Parse(jsonModel);
@@ -30,6 +30,9 @@ namespace LBXamarinSDK
 {
     namespace LBRepo
     {
+		/* CRUD Interface holds the basic CRUD operations for all models.
+		   In turn, all repositories will inherit from this.
+		*/
         public abstract class CRUDInterface<T> where T : Model
         {
 			public static String getAPIPath(String crudMethodName)
@@ -66,7 +69,7 @@ foreach (var model in modelsJSON.First.First)
                 return "Error - no known CRUD path.";
             }
 
-            // All the basic CRUD
+            // All the basic CRUD: Hardcoded
             public static async Task<T> Create(T theModel)
             {
                 String APIPath = getAPIPath("Create");
@@ -156,29 +159,29 @@ foreach (var model in modelsJSON.First.First)
                 return response;
             }
         }
+
+		// Dynamic repositories for all Dynamic models:
 <#
 		foreach (var model in modelsJSON.First.First)
         {
-
-		string crudName = model.First.First.ToString();
-		string repositoryName = (string)model.ElementAt(1).First;
-	
-		
-		if(repositoryName == crudName)
-			repositoryName = repositoryName + "s";
+			// Determine Repository name by using the plural name of the model. E.g. Model Car and repoistory Cars.
+			string crudName = model.First.First.ToString();
+			string repositoryName = (string)model.ElementAt(1).First;
+			if(repositoryName == crudName)
+				repositoryName = repositoryName + "s";
 		
 
 #>		public class <#= repositoryName #> : CRUDInterface<<#=crudName#>>
 		{
 <#
-			// Get the methods names of this model and iterate through the methods
+			// Get the methods names of this model and iterate through the methods to create them
 			List<String> methodNames = JObject.Parse(model.ElementAt(8).First.ToString()).Properties().Select(p => p.Name).ToList();
 			List<string> parsedMethodNames = new List<string>();
 			int counter = -1;
 			foreach (string methodName in methodNames)
 			{
 				++counter;
-				// skip Crud methods
+				// Skip Crud methods, already included as inheritence from hardcoded CRUDInterface
 				if (methodName == "create" || methodName == "upsert" || methodName == "exists" ||
 					methodName == "findById" || methodName == "find"
 					|| methodName == "findOne" || methodName == "updateAll" || methodName == "deleteById" ||
@@ -192,25 +195,13 @@ foreach (var model in modelsJSON.First.First)
 				// Get return type and convert it to C# type
 				JToken methodJsonToken = model.ElementAt(8).First.ElementAt(counter);
                 string returnTypeOrig = ((String)methodJsonToken.First.ElementAt(3).First.First);
-
 				if(!string.IsNullOrEmpty(returnTypeOrig) && !isPrimitive(returnTypeOrig))
                 {
 					returnTypeOrig = returnTypeOrig.ElementAt(0).ToString().ToUpper() +returnTypeOrig.Substring(1);
                 }
 				if(returnTypeOrig == "PersistedModel")
 					returnTypeOrig = "Model";
-				
-				
-				//if(!isPrimitive(returnTypeOrig))
-                //{
-
-				//	returnTypeOrig = "1";
-                //
-
 				returnTypeOrig = convertToCSType(returnTypeOrig, true);
-
-				
-
                 if (String.IsNullOrEmpty(returnTypeOrig))
                     returnTypeOrig = "void";
                 bool returnTypeIsArray = false;
@@ -221,20 +212,19 @@ foreach (var model in modelsJSON.First.First)
 				string returnType = returnTypeOrig;
                 if (returnTypeIsArray)
                     returnType = "IList<" + returnType + ">";
-
 				returnType = "<" + returnType + ">";
-
 				if(returnType == "<void>")
 					returnType = "";
 
 				// Get the parameters passed to the method
+				// TODO: Sort before, make sure that query parameters appear at the end of the list: default params need to be last
 				JObject paramsObj = JObject.Parse(methodJsonToken.First.ElementAt(2).First.ToString());
                 IList<string> paramsNames = paramsObj.Properties().Select(p => p.Name).ToList();
                 IList<string> paramsTypes = methodJsonToken.First.ElementAt(2).First.Select(fieldProperties => fieldProperties.First.First.First.ToString()).ToList();
 				IList<string> paramsPlacements = methodJsonToken.First.ElementAt(2).First.Select(fieldProperties => fieldProperties.First.ElementAt(1).First.ToString()).ToList();
-
 				string presentableMethodName = createPresentableMethodName(methodName);
 	
+				// Create a presentable method name for the method
 				string nameSuffix = "";
 				while(parsedMethodNames.Contains(presentableMethodName + nameSuffix))
                 {
@@ -268,8 +258,8 @@ foreach (var model in modelsJSON.First.First)
 <# }
                 }
 
+				// Determine the return type of the response and what should be extracted from it to be returned to caller
 				string returnStatementString = "";
-				
 				string templatesString = returnTypeOrig;
 				if(returnTypeIsArray)
 					templatesString = templatesString + "[]";
@@ -295,21 +285,16 @@ foreach (var model in modelsJSON.First.First)
 				<#=returnStatementString#>
 			}
 <#
-
-
-
-
-
-			}
+}
 #>		}
 <#
-		}
+}
 #>		
 	}
 }
 
-<#+
-		
+<#+	
+		// Checks if a type name is primitive, including loopback primitives such as geopoint
 		private static bool isPrimitive(string someType)
         {
 			string input = null;
@@ -327,6 +312,7 @@ foreach (var model in modelsJSON.First.First)
 			return false;
         }
 
+		// Converts the loopback type name to c# type name. E.g. "Number" to "double"
 		private static string convertToCSType(string inputType, bool isReturnType = false)
 		{
 			string input = null;
@@ -355,6 +341,7 @@ foreach (var model in modelsJSON.First.First)
 			return inputType;
 		}
 
+		// Determines to parameter type of a method parameter
 		private static string determineParamType(string inputType, string paramPlacement, string modelName)
         {
 			if(paramPlacement == "body" && inputType.ToLower() == "object")
@@ -363,7 +350,9 @@ foreach (var model in modelsJSON.First.First)
 			return convertToCSType(inputType);
         }
 
-private static string createPresentableMethodName(string inputString)
+		// Creates a presentable method name from the method name given in the Json definition file which is not always presentable. 
+		// E.g. "::Cars::Driver::Find" or "__get___blarg"
+		private static string createPresentableMethodName(string inputString)
         {
             string prototypeRegexStr = @"__([A-Za-z0-9\-]+)__([A-Za-z0-9\-]+)";
             string associationRegexStr = @"::([A-Za-z0-9\-]+)::([A-Za-z0-9\-]+)::([A-Za-z0-9\-]+)";
@@ -386,5 +375,4 @@ private static string createPresentableMethodName(string inputString)
             }
             return inputString;
         }
-		
-		#>
+#>

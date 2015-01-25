@@ -7,7 +7,7 @@
 <#@ import namespace="System.IO" #>
 
 // Uncomment the following line when debugging
-<#@assembly name="C:/Users/PerfectedTech/Documents/visual studio 2013/Projects/LBXamarinSDK/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"#>
+<#/*@assembly name="C:/Users/PerfectedTech/Documents/visual studio 2013/Projects/LBXamarinSDK/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
 // ^^
 
 <#@ import namespace="Newtonsoft.Json" #>
@@ -17,8 +17,8 @@
 
 <#
 // Uncomment the following two lines when debugging:
-String inputPath = "C:/Users/PerfectedTech/Documents/visual studio 2013/Projects/LBXamarinSDK/LBXamarinSDK/bin/Debug";
-String jsonModel = File.ReadAllText(inputPath + "/jsonDefs.txt");
+//String inputPath = "C:/Users/PerfectedTech/Documents/visual studio 2013/Projects/LBXamarinSDK/LBXamarinSDK/bin/Debug";
+//String jsonModel = File.ReadAllText(inputPath + "/jsonDefs.txt");
 // ^^
 #>
 
@@ -40,7 +40,8 @@ foreach (var model in modelsJSON.First.First)
 #>
 	public class <#= modelName #> : <#= inheritenceString#>
 	{
-<#
+<#		
+		// Determine the ID field, gather information about the fields of the model
 		String IDField = "";
 		JObject fieldsObj = JObject.Parse(model.ElementAt(4).First.ToString());
         List<string> fields = fieldsObj.Properties().Select(p => p.Name).ToList();
@@ -59,15 +60,18 @@ foreach (var model in modelsJSON.First.First)
 			}
 		}
 		string idType = "string";
+
+		// Add all fields, with Json tags
         for (int i = 0; i < fields.Count; ++i)
         {
-			if(fieldsNecessities.ElementAt(i) == "True") {#>		 //Required
+			if(fieldsNecessities.ElementAt(i) == "True") {#>		 // Required Field. TODO: Validate the existence of this property locally before sending to server
 <#}
 			#>		[JsonProperty ("<#=fields.ElementAt(i)#>", NullValueHandling = NullValueHandling.Ignore)]
 <#			
 			#>		public <#=fields.ElementAt(i) == IDField ? idType : jsTypeToCsType(fieldsTypes.ElementAt(i))#><#if(fieldIsArrayList.ElementAt(i)){#>[]<#}#> <#=createLegalVariable(fields.ElementAt(i))#> { get; set; }
 
 <#}#>
+		// This method identifies the ID field
 		public override string getID()
 		{
 			return <# if((bool)model.ElementAt(3).First == true) {#>id<#}else{#><##><#=IDField#><#}#>;
@@ -78,6 +82,7 @@ foreach (var model in modelsJSON.First.First)
 // Eof
 <#+
 
+// Creates a valid field name: Avoid keywords, don't begin with numeric, etc
 private string createLegalVariable(string input)
 {
 	string avoidFirstCharNumber = Char.IsLetter(input.ElementAt(0)) ? "" : "var";
@@ -92,11 +97,10 @@ private string createLegalVariable(string input)
     {
 		result = "field" + result;
     }
-
 	return result;
 }
 
-
+// Converts a loopback type name to c# type name. E.g. Number to double
 public String jsTypeToCsType(String JSType)
 {
 	if(JSType == "Number")
