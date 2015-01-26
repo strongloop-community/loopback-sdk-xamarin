@@ -12,7 +12,7 @@ Creation of Loopback SDK for Xamarin Studio or C# project.
 
 * Summary of set up
 
-* * b
+    s
 
 * Configuration
 * Dependencies
