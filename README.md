@@ -11,6 +11,9 @@ Creation of Loopback SDK for Xamarin Studio or C# project.
 ### How do I get set up? ###
 
 * Summary of set up
+
+>>S
+
 * Configuration
 * Dependencies
 * Database configuration
