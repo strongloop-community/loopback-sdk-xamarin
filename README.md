@@ -12,13 +12,9 @@ Creation of Loopback SDK for Xamarin Studio or C# project.
 
 * Summary of set up
 
-    s
-
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+    To compile an SDK, take the folder "lb-xm", make sure you have all the dependencies and run "node lb-xm d:\someserver\server\server.js sdk.dll" in shell, where first parameter is the server.js file of the Loopback server, and sdk.dll is the filename of the output compiled SDK.
+    To review the C# part of the Generator (Source code of lb-xm/bin/LBXamarinSDKGenerator.dll), take the folder "LBXamarinSDK" and "LBXamarinSDK.sln".
+    To review the example App using a compiled SDK, take the folder "SDK Example". This folder in turn contains a Loopback server and a Xamarin solution of an Android App using the SDK.
 
 ### Who do I talk to? ###
 
