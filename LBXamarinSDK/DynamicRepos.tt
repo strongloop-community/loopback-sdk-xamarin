@@ -7,19 +7,22 @@
 <#@ import namespace="System.Text.RegularExpressions" #>
 <#@ import namespace="System.IO" #>
 
-<# /* Uncomment the following line when debugging */ #>
+// Uncomment the following line when debugging
 <#/*@ assembly name="C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
-<# /* ^^ */ #>
+// ^^
 
 <#@ import namespace="Newtonsoft.Json" #>
 <#@ import namespace="Newtonsoft.Json.Linq" #>
 <#@ parameter name="jsonModel" type="System.String" #>
 
 <#
-// Uncomment the following line when debugging:
-//string jsonModel = File.ReadAllText("D:/jsonDefs.txt");
+// Uncomment the following two lines when debugging:
+//String inputPath = "C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/LBXamarinSDK/bin/Debug";
+//String jsonModel = File.ReadAllText(inputPath + "/jsonDefs.txt");
 // ^^
+
 JObject modelsJSON = JObject.Parse(jsonModel);
+
 #>
 // Dynamically created Repo cs file from Json
 
@@ -166,7 +169,7 @@ foreach (var model in modelsJSON.First.First)
 			string repositoryName = (string)model.ElementAt(1).First;
 			if(repositoryName == crudName)
 				repositoryName = repositoryName + "s";
-			repositoryName = capitalize(repositoryName);
+		
 
 #>		public class <#= repositoryName #> : CRUDInterface<<#=crudName#>>
 		{
@@ -335,19 +338,8 @@ foreach (var model in modelsJSON.First.First)
 				return "string";
 			if(input == "geopoint")
 				return "GeoPoint";
-			return capitalize(inputType);
+			return inputType;
 		}
-
-
-		
-		public static string capitalize(string input)
-		{
-			if(string.IsNullOrEmpty(input))
-				return input;
-
-			return input.ElementAt(0).ToString().ToUpper() + input.Substring(1);
-		}
-
 
 		// Determines to parameter type of a method parameter
 		private static string determineParamType(string inputType, string paramPlacement, string modelName)
