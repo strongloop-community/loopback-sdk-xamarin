@@ -5,10 +5,12 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.IO" #>
+<#@ assembly name="Microsoft.CSharp" #>
+<#@ import namespace="Microsoft.CSharp" #>
 
-// Uncomment the following line when debugging
+<# /* Uncomment the following line when debugging */ #>
 <#/*@assembly name="C:/Users/PerfectedTech/Documents/visual studio 2013/Projects/LBXamarinSDK/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
-// ^^
+<# /* ^^ */ #>
 
 <#@ import namespace="Newtonsoft.Json" #>
 <#@ import namespace="Newtonsoft.Json.Linq" #>
@@ -16,9 +18,8 @@
 
 
 <#
-// Uncomment the following two lines when debugging:
-//String inputPath = "C:/Users/PerfectedTech/Documents/visual studio 2013/Projects/LBXamarinSDK/LBXamarinSDK/bin/Debug";
-//String jsonModel = File.ReadAllText(inputPath + "/jsonDefs.txt");
+// Uncomment the following line when debugging:
+//string jsonModel = File.ReadAllText("D:/jsonDefs.txt");
 // ^^
 #>
 
@@ -78,6 +79,47 @@ foreach (var model in modelsJSON.First.First)
 		}
 	}
 <#}#>
+
+
+	// Relationship classes:
+<#
+// Create classes for responses and input of relationship type "hasAndBelongsToMany" 
+List<string> existentRelationshipResponses = new List<string>();
+foreach (var model in modelsJSON.First.First)
+{
+	foreach(var rel in model.ElementAt(6).First) {
+
+		if(rel != null && (string)rel.First.ElementAt(2).First == "hasAndBelongsToMany") {
+			string responseClassName = (string)model.First.First + (string)rel.First.ElementAt(1);
+			if(!existentRelationshipResponses.Contains(responseClassName)) {
+				existentRelationshipResponses.Add(responseClassName);
+
+				string firstFieldName = decapitalize((string)model.First.First) + "Id";
+				string secondFieldName = decapitalize((string)rel.First.ElementAt(1)) + "Id";
+#>
+	public class <#= responseClassName #> : Model
+	{
+		[Newtonsoft.Json.JsonProperty("id")]
+        public string id { get; set; }
+
+		[Newtonsoft.Json.JsonProperty("<#= firstFieldName #>")]
+        public string <#= firstFieldName #> { get; set; }
+
+		[Newtonsoft.Json.JsonProperty("<#= secondFieldName #>")]
+        public string <#= secondFieldName #> { get; set; }
+	}
+
+<#
+            }
+        }
+    }
+}
+
+if(existentRelationshipResponses.Count == 0) {#> // None.<#}
+#>
+
+
+
 }
 // Eof
 <#+
@@ -85,19 +127,21 @@ foreach (var model in modelsJSON.First.First)
 // Creates a valid field name: Avoid keywords, don't begin with numeric, etc
 private string createLegalVariable(string input)
 {
-	string avoidFirstCharNumber = Char.IsLetter(input.ElementAt(0)) ? "" : "var";
-
-	string result = avoidFirstCharNumber + input;
-
-	string[] invalidVariableNames = {"base", "int", "long", "double" /* TODO: include all key words */};
-
-	IList<string> invalidVariableNamesList = new List<string>(invalidVariableNames);
-
-	if(invalidVariableNamesList.Contains(input))
+	string result = input;
+	CSharpCodeProvider cs = new CSharpCodeProvider();
+	if(!cs.IsValidIdentifier(result))
     {
-		result = "field" + result;
+		result = "field_" + result;
     }
 	return result;
+}
+
+// Decapitalizes a string
+public static string decapitalize(string input)
+{
+	if(string.IsNullOrEmpty(input))
+		return input;
+	return input.ElementAt(0).ToString().ToLower() + input.Substring(1);
 }
 
 // Converts a loopback type name to c# type name. E.g. Number to double

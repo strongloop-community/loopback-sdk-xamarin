@@ -72,6 +72,10 @@ function describeModels(app) {
     c.pluralName = c.sharedClass.ctor.pluralModelName;
     c.params =  app.models[c.name].definition.properties;
     c.baseModel = app.models[c.name].definition.settings.base;
+
+    if(c.baseModel != null && typeof(c.baseModel) === "function"){
+      c.baseModel = "";
+    }
     if(app.models[c.name].definition._ids != null) {
       c.isGenerated = app.models[c.name].definition._ids[0].property.generated;
     }else{

@@ -1,15 +1,26 @@
 ﻿<#@ template language="C#" hostSpecific="false"#>
+
 <#@ assembly name="System.Core" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
-
-// Uncomment the following line when debugging 
+<#@ import namespace="System.IO" #>
+<# /* Uncomment the following line when debugging */ #>
 <#/*@ assembly name="C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
-// ^^
+<# /* ^^ */ #>
 
 <#@ import namespace="Newtonsoft.Json" #>
 <#@ import namespace="Newtonsoft.Json.Linq" #>
+<#@ parameter name="jsonModel" type="System.String" #>
+
+<#
+// Uncomment the followingline when debugging:
+//string jsonModel = File.ReadAllText("D:/jsonDefs.txt");
+// ^^
+
+JObject modelsJSON = JObject.Parse(jsonModel);
+List<String> modelNames = modelsJSON.First.First.Select(x => (string)x.First).ToList();
+#>
 
 // Usings for all 3 templates
 using System;
@@ -152,7 +163,7 @@ namespace LBXamarinSDK
         public static async Task<T> PerformRequest<T>(string APIUrl, string json, string method = "POST", IDictionary<string, string> queryStrings = null)
 		{
 			if(debugMode)
-				Console.WriteLine("-------- >> DEBUG: Performing " + method + " request, Json: " + json);
+				Console.WriteLine("-------- >> DEBUG: Performing " + method + " request, Json: " + (string.IsNullOrEmpty(json) ? "EMPTY" : json));
 
 		    RestRequest request = null;
             request = new RestRequest(APIUrl, new HttpMethod(method));
@@ -162,7 +173,7 @@ namespace LBXamarinSDK
             {
                 foreach (var query in queryStrings)
                 {
-                    if (query.Value != "")
+                    if (!string.IsNullOrEmpty(query.Value))
                     {
                         request.AddParameter(query.Key, query.Value, ParameterType.QueryString);
                     }
@@ -228,8 +239,11 @@ namespace LBXamarinSDK
         }
     }
 
+<#
+	if(!modelNames.Contains("AccessToken")) {
+#>
 	// Access Token model
-	public class AccessToken : Model
+	public partial class AccessToken : Model
     {
         [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
         public string id { get; set; }
@@ -254,7 +268,9 @@ namespace LBXamarinSDK
             return JsonConvert.DeserializeObject<AccessToken>(jObj.ToString());
         }
     }
-
+<#
+    }
+#>
 	// GeoPoint primitive loopback type
 	public class GeoPoint : Model
 	{

@@ -16,47 +16,26 @@ using RestSharp.Portable;
  * Comments: yehuda@perfectedtech.com
  * Complaints: chayim@perfectedtech.com
  */
-
 namespace LBXamarinSDKGenerator
 {
     public class Startup
     {
         /**
-         * Debug Tool
-         */
+        * Debug Tool
+        */
         public void WriteDefinitionsDebug(string jsonModel)
         {
+            Console.WriteLine("Writing server Json definition to D:\\debug.txt");
             System.IO.StreamWriter file = new System.IO.StreamWriter("D:\\debug.txt");
             file.Write(jsonModel);
             file.Close();
         }
 
-        /*
-         * This function is called through Edge.JS by lb-xm.js. 
-         * A Json definitions is passed and a DLL for the SDK is created as a result.
+        /**
+         * Compiles the code.
          */
-        public async Task<object> Invoke(object input)
+        public async Task<bool> compile(string code, string outputPath)
         {
-            // Get the DLL output path and json definition of the server
-            string jsonModel = ((Object[]) input)[0].ToString();
-            string outputPath = ((Object[])input)[1].ToString();
-
-            // Create new templates and pass the definition Json to DynamicModels and DynamicRepos
-            var dynamicModelsTemplate = new DynamicModels();
-            var dynamicReposTemplate = new DynamicRepos();
-            var constantCode = new HardcodedModels();
-
-            dynamicModelsTemplate.Session = new Dictionary<string, object>();
-            dynamicModelsTemplate.Session["jsonModel"] = jsonModel;
-            dynamicReposTemplate.Session = new Dictionary<string, object>();
-            dynamicReposTemplate.Session["jsonModel"] = jsonModel;
-            
-            // Create dynamic code from templates
-            dynamicModelsTemplate.Initialize();
-            dynamicReposTemplate.Initialize();
-            string code = constantCode.TransformText() + dynamicReposTemplate.TransformText() +
-                          dynamicModelsTemplate.TransformText();
-
             // Compile dynamic code
             CompilerParameters compilerParams = new CompilerParameters() { OutputAssembly = outputPath };
             compilerParams.ReferencedAssemblies.Add("System.dll");
@@ -87,22 +66,76 @@ namespace LBXamarinSDKGenerator
                 return false;
             }
         }
+
+        /*
+         * This function is called through Edge.JS by lb-xm.js. 
+         * A Json definitions is passed and a DLL for the SDK is created as a result.
+         */
+        public async Task<object> Invoke(object input)
+        {
+            // Get the DLL output path and json definition of the server
+            string jsonModel = ((Object[]) input)[0].ToString();
+            //WriteDefinitionsDebug(jsonModel);
+
+            // Create new templates and pass the definition Json to DynamicModels and DynamicRepos
+            var dynamicModelsTemplate = new DynamicModels();
+            var dynamicReposTemplate = new DynamicRepos();
+            var constantCode = new HardcodedModels();
+
+            dynamicModelsTemplate.Session = new Dictionary<string, object>();
+            dynamicModelsTemplate.Session["jsonModel"] = jsonModel;
+            dynamicReposTemplate.Session = new Dictionary<string, object>();
+            dynamicReposTemplate.Session["jsonModel"] = jsonModel;
+            constantCode.Session = new Dictionary<string, object>();
+            constantCode.Session["jsonModel"] = jsonModel;
+
+            // Create dynamic code from templates
+            dynamicModelsTemplate.Initialize();
+            dynamicReposTemplate.Initialize();
+            constantCode.Initialize();
+
+            string code = constantCode.TransformText() + dynamicReposTemplate.TransformText() +
+                          dynamicModelsTemplate.TransformText();
+
+            // Determine: Compile DLL or output CS
+            var compileFlag = ((Object[]) input)[2];
+            if (compileFlag != null && compileFlag.ToString() == "c")
+            {
+                string outputPath = "SDK.dll";
+                if (((Object[]) input)[1] != null)
+                {
+                    outputPath = ((Object[])input)[1].ToString();
+                }
+                Console.WriteLine("Compiling.");
+                return await compile(code, outputPath);
+            }
+            else
+            {
+                Console.WriteLine("Writing CS file LBXamarinSDK.cs");
+                System.IO.StreamWriter file = new System.IO.StreamWriter("LBXamarinSDK.cs");
+                file.Write(code);
+                file.Close();
+                return true;
+            }
+        }
     }
 }
 
 
 /*
-namespace LBXamarinSDK
-{
-    public class DebugProgram
+    namespace LBXamarinSDK
     {
-        private static void Main(string[] args)
+        public class DebugProgram
         {
+            private static void Main(string[] args)
+            {
 
-            Gateway.SetServerBaseURL(new Uri("http://10.0.0.27:3000/api/"));
-            Gateway.SetDebugMode(true);
-            Console.ReadKey();
+                Gateway.SetServerBaseURL(new Uri("http://10.0.0.31:3000/api/"));
+                Gateway.SetDebugMode(true);
+                Console.WriteLine(Gateway.isConnected().Result);
+                Console.ReadKey();
+            }
         }
     }
-}*/
+*/
     
