@@ -8,15 +8,13 @@ var generator = require('../index.js');
 var edge = require ('edge');
 
 var argv = optimist
-  .usage('Generate Angular $resource services for your LoopBack application.' +
-    '\nUsage:' +
-    '\n    $0 [options] server/app.js [client/js/lb-services.js]')
-  .describe('m', 'The name for generated Angular module.')
-  .default('m', 'lbServices')
-  .describe('u', 'URL of the REST API end-point')
-  .alias({ u : 'url', m: 'module-name' })
+  .usage('Generate an SDK for Loopback in C#.' +
+    '\n\nUsage: node lb-xm [server_path] [optional: compilation flag] [optional: output dll name]' +
+    '\n   E.g. "node lb-xm c:/testServer/server/server.js" outputs a CS file.' +
+    '\n   E.g. "node lb-xm c:/testServer/server/server.js c sdk.dll" outputs a compiled SDK: sdk.dll.')
   .demand(1)
   .argv;
+
 
 var appFile = path.resolve(argv._[0]);
 
@@ -31,7 +29,11 @@ console.error('Generating %j for the API endpoint %j', ngModuleName, apiUrl);
 var result = generator.services(app, ngModuleName, apiUrl);
 
 var sdkCreationFunction = edge.func('LBXamarinSDKGenerator.dll');
-var params = [result, argv._[1]];
+
+var compileFlag = argv._[1];
+var dllOutputName = argv._[2];
+
+var params = [result, dllOutputName, compileFlag];
 
 //console.log(result);
 sdkCreationFunction(params, true);

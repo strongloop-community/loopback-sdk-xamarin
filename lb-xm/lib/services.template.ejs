@@ -20,7 +20,11 @@
 <% }; -%>
     },
     'validations': [],
-    'relations': {},
+    'relations': {
+    <% for(var rel in meta.relations){ -%>
+    '<%-: rel %>': { 'foreignKey': '<%-: meta.relations[rel].foreignKey %>', 'model': '<%-: meta.relations[rel].model %>', 'type': '<%-: meta.relations[rel].type %>'} <% if(!(meta.relations[rel] === meta.relations[Object.keys(meta.relations)[Object.keys(meta.relations).length-1]])){ %>,<% } %>
+    <% } -%>
+    },
     'acls': [],
     'methods':
     {
