@@ -32,7 +32,7 @@ namespace LBXamarinSDK
 		*/
         public abstract class CRUDInterface<T> where T : Model
         {
-			public static String getAPIPath(String crudMethodName)
+			protected static String getAPIPath(String crudMethodName)
             {
 				String modelName = (typeof(T)).ToString().Substring((typeof(T)).ToString().IndexOf('.')+1);
 			    crudMethodName = crudMethodName.ToLower();

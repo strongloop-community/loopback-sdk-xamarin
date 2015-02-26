@@ -34,7 +34,7 @@ namespace LBXamarinSDKGenerator
         /**
          * Compiles the code.
          */
-        public async Task<bool> compile(string code, string outputPath)
+        public async Task<bool> Compile(string code, string outputPath, string currentPath)
         {
             // Compile dynamic code
             CompilerParameters compilerParams = new CompilerParameters() { OutputAssembly = outputPath };
@@ -43,8 +43,8 @@ namespace LBXamarinSDKGenerator
             compilerParams.ReferencedAssemblies.Add("System.Linq.dll");
             compilerParams.ReferencedAssemblies.Add("System.Net.Http.dll");
             compilerParams.ReferencedAssemblies.Add("System.Runtime.dll");
-            compilerParams.ReferencedAssemblies.Add("/RestSharp.Portable.dll");
-            compilerParams.ReferencedAssemblies.Add("/Newtonsoft.Json.dll");
+            compilerParams.ReferencedAssemblies.Add(currentPath + "/RestSharp.Portable.dll");
+            compilerParams.ReferencedAssemblies.Add(currentPath + "/Newtonsoft.Json.dll");
             compilerParams.WarningLevel = 1;
             compilerParams.TreatWarningsAsErrors = false;
             var compiler = new CSharpCodeProvider();
@@ -106,12 +106,13 @@ namespace LBXamarinSDKGenerator
                 {
                     outputPath = ((Object[])input)[1].ToString();
                 }
-                Console.WriteLine("Compiling.");
-                return await compile(code, outputPath);
+                Console.WriteLine("Compiling...");
+                string currentPath = ((Object[]) input)[3].ToString();
+                return await Compile(code, outputPath, currentPath);
             }
             else
             {
-                Console.WriteLine("Writing CS file LBXamarinSDK.cs");
+                Console.WriteLine("Writing CS file: LBXamarinSDK.cs...");
                 System.IO.StreamWriter file = new System.IO.StreamWriter("LBXamarinSDK.cs");
                 file.Write(code);
                 file.Close();
