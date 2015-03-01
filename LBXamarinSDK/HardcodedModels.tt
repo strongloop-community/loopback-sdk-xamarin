@@ -6,7 +6,7 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.IO" #>
 <# /* Uncomment the following line when debugging */ #>
-<#/*@ assembly name="C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
+<#/*@assembly name="C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
 <# /* ^^ */ #>
 
 <#@ import namespace="Newtonsoft.Json" #>

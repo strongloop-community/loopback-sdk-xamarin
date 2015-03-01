@@ -8,7 +8,7 @@
 <#@ import namespace="System.IO" #>
 
 <# /* Uncomment the following line when debugging */ #>
-<#/*@ assembly name="C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
+<#/*@assembly name="C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
 <# /* ^^ */ #>
 
 <#@ import namespace="Newtonsoft.Json" #>
@@ -164,9 +164,10 @@ foreach (var model in modelsJSON.First.First)
 			// Determine Repository name by using the plural name of the model. E.g. Model Car and repoistory Cars.
 			string crudName = model.First.First.ToString();
 			string repositoryName = (string)model.ElementAt(1).First;
+			repositoryName = capitalize(repositoryName);
 			if(repositoryName == crudName)
 				repositoryName = repositoryName + "s";
-			repositoryName = capitalize(repositoryName);
+			
 
 #>		public class <#= repositoryName #> : CRUDInterface<<#=crudName#>>
 		{
