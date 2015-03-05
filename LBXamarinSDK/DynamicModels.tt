@@ -40,7 +40,7 @@ foreach (var model in modelsJSON.First.First)
 		inheritenceString = "Model";
 	}
 #>
-	public class <#= modelName #> : <#= inheritenceString#>
+	public partial class <#= modelName #> : <#= inheritenceString#>
 	{
 <#		
 		// Determine the ID field, gather information about the fields of the model

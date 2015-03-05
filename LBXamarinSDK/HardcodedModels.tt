@@ -36,6 +36,8 @@ using LBXamarinSDK;
 using LBXamarinSDK.LBRepo;
 using System.Net.Http;
 using System.Threading;
+using System.Net;
+using System.Net.Sockets;
 
 namespace LBXamarinSDK
 {
@@ -93,6 +95,22 @@ namespace LBXamarinSDK
             BASE_URL = baseUrl;
             _client.BaseUrl = baseUrl;
         }
+
+		// Define server Base Url for API requests to self local IP
+		public static void SetServerBaseURLToSelf()
+		{
+			var firstOrDefault = Dns.GetHostEntry(Dns.GetHostName()).AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
+            if (firstOrDefault != null)
+            {
+                string adrStr = "http://" + firstOrDefault.ToString() + ":3000/api/";
+                SetServerBaseURL(new Uri(adrStr));
+				
+            }
+			else
+			{
+				throw new Exception();
+			}
+		}
 
 		// Sets an access token to be added as an authorization in all future server requests
         public static void SetAccessToken(AccessToken accessToken)
@@ -239,6 +257,20 @@ namespace LBXamarinSDK
         }
     }
 
+	// Allow conversion between the return type of login methods into AccessToken
+	// TODO: Add this jobject->class implicit conversion as a templated function for all classes inheriting from model
+	public partial class AccessToken : Model
+    {
+        public static implicit operator AccessToken(JObject jObj)
+        {
+            if (jObj == null)
+            {
+                return null;
+            }
+            return JsonConvert.DeserializeObject<AccessToken>(jObj.ToString());
+        }
+    }
+
 <#
 	if(!modelNames.Contains("AccessToken")) {
 #>
@@ -260,12 +292,6 @@ namespace LBXamarinSDK
 		public override String getID()
         {
             return id;
-        }
-
-		// TODO: Add this implicit operator to all models, hardcoded and dynamic
-		public static implicit operator AccessToken(JObject jObj)
-        {
-            return JsonConvert.DeserializeObject<AccessToken>(jObj.ToString());
         }
     }
 <#

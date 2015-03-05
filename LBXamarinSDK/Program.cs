@@ -75,7 +75,7 @@ namespace LBXamarinSDKGenerator
         {
             // Get the DLL output path and json definition of the server
             string jsonModel = ((Object[]) input)[0].ToString();
-            WriteDefinitionsDebug(jsonModel);
+            //WriteDefinitionsDebug(jsonModel);
 
             // Create new templates and pass the definition Json to DynamicModels and DynamicRepos
             var dynamicModelsTemplate = new DynamicModels();
