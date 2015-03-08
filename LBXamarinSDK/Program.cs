@@ -40,9 +40,9 @@ namespace LBXamarinSDKGenerator
             CompilerParameters compilerParams = new CompilerParameters() { OutputAssembly = outputPath };
             compilerParams.ReferencedAssemblies.Add("System.dll");
             compilerParams.ReferencedAssemblies.Add("System.Core.dll");
-            compilerParams.ReferencedAssemblies.Add("System.Linq.dll");
+            //compilerParams.ReferencedAssemblies.Add("System.Linq.dll");
             compilerParams.ReferencedAssemblies.Add("System.Net.Http.dll");
-            compilerParams.ReferencedAssemblies.Add("System.Runtime.dll");
+            //compilerParams.ReferencedAssemblies.Add("System.Runtime.dll");
             compilerParams.ReferencedAssemblies.Add(currentPath + "/RestSharp.Portable.dll");
             compilerParams.ReferencedAssemblies.Add(currentPath + "/Newtonsoft.Json.dll");
             compilerParams.WarningLevel = 1;

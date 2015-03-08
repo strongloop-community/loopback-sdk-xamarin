@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "docular": "^0.6.3",
+	"node-gyp": "^1.0.3",
     "edge": "^0.9.3",
     "ejs": "^1.0.0",
     "express": "3.x",
