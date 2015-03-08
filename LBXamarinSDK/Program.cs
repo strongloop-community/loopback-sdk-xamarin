@@ -119,11 +119,12 @@ namespace LBXamarinSDKGenerator
                 return true;
             }
         }
+    
     }
 }
 
 
-/*
+    /*
     namespace LBXamarinSDK
     {
         public class DebugProgram
@@ -131,12 +132,13 @@ namespace LBXamarinSDKGenerator
             private static void Main(string[] args)
             {
 
-                Gateway.SetServerBaseURL(new Uri("http://10.0.0.31:3000/api/"));
-                Gateway.SetDebugMode(true);
-                Console.WriteLine(Gateway.isConnected().Result);
+                //Gateway.SetServerBaseURL(new Uri("http://10.0.0.31:3000/api/"));
+               // Gateway.SetDebugMode(true);
+                //Console.WriteLine(Gateway.isConnected().Result);
+                Console.WriteLine(Customers.Count().Result);
                 Console.ReadKey();
             }
         }
     }
-*/
+   */
  

@@ -68,11 +68,14 @@ namespace LBXamarinSDK
 		public static void SetDebugMode(bool isDebugMode)
 		{
 			debugMode = isDebugMode;
-            // **** VITAL! DO NOT REMOVE! ********
-            Console.WriteLine("*******************************************************************************");
-            Console.WriteLine("** SDK Gateway constructor. If something doesn't work it's Chayim's fault.   **");
-            Console.WriteLine("*******************************************************************************\n");
-            // **** ^^^ VITAL! DO NOT REMOVE! ********
+			if(debugMode)
+			{
+				// **** VITAL! DO NOT REMOVE! ************
+				Console.WriteLine("*******************************************************************************");
+				Console.WriteLine("** SDK Gateway constructor. If something doesn't work it's Chayim's fault.   **");
+				Console.WriteLine("*******************************************************************************\n");
+				// **** ^^^ VITAL! DO NOT REMOVE! ********
+			}
 		}
 		
 		/*** Cancellation Token methods, define a timeout for a server request ***/
@@ -101,13 +104,17 @@ namespace LBXamarinSDK
 		{
 			var firstOrDefault = Dns.GetHostEntry(Dns.GetHostName()).AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
             if (firstOrDefault != null)
-            {
+            { 
                 string adrStr = "http://" + firstOrDefault.ToString() + ":3000/api/";
+				if (debugMode)
+                    Console.WriteLine("-------- >> DEBUG: Setting Gateway URL to " + adrStr);	
                 SetServerBaseURL(new Uri(adrStr));
 				
             }
 			else
 			{
+				if (debugMode)
+                    Console.WriteLine("-------- >> DEBUG: Error finding self URL.");
 				throw new Exception();
 			}
 		}

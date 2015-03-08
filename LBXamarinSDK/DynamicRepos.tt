@@ -32,15 +32,16 @@ namespace LBXamarinSDK
 		*/
         public abstract class CRUDInterface<T> where T : Model
         {
-			protected static String getAPIPath(String crudMethodName)
+			private static readonly Dictionary<string, string> APIDictionary = new Dictionary<string, string>
             {
-				String modelName = (typeof(T)).ToString().Substring((typeof(T)).ToString().IndexOf('.')+1);
-			    crudMethodName = crudMethodName.ToLower();
 <#
 
 // Fill basic CRUD Paths in getAPIPath():
+bool parsedOneModelForCRUD = false;
 foreach (var model in modelsJSON.First.First)
 {
+	if(parsedOneModelForCRUD) { #>,
+<#}
 	String modelName = model.First.First.ToString();
 	JObject methodsObj = JObject.Parse(model.ElementAt(8).First.ToString());
 	List<String> methodNames = methodsObj.Properties().Select(p => p.Name).ToList();
@@ -50,20 +51,48 @@ foreach (var model in modelsJSON.First.First)
 		methodURLS.Add(((String) methodProperties.First.First.First).Trim().Substring(1));
 	}
 
-	for(int i = 0; i < methodNames.Count(); ++i)
+	List<String> crudMethodNames = new List<string>();
+	List<String> crudMethodURLS = new List<string>();
+	for(int i = 0; i < methodNames.Count; ++i)
+    {
+		string methodName = methodNames.ElementAt(i).ToString();
+		if(methodName == "create" || methodName == "upsert" || methodName == "exists" || methodName == "findbyid" || methodName == "find"
+			|| methodName == "findone" || methodName == "updateall" || methodName == "deletebyid" || methodName == "count" || methodName == "prototype$updateattributes")
+        {
+			crudMethodNames.Add(methodName);
+			crudMethodURLS.Add(methodURLS.ElementAt(i));
+        }
+
+    }
+
+	/*List<String> crudMethodNames = methodNames.Where(c => (c.ToLower() == "create" || c.ToLower() == "upsert" || c.ToLower() == "exists" 
+															|| c.ToLower() == "findbyid" || c.ToLower() == "find"|| c == "findone" 
+															|| c.ToLower() == "updateall" || c.ToLower() == "deletebyid" || c.ToLower() == "count" 
+															|| c.ToLower() == "prototype$updateattributes")).ToList();*/
+
+	for(int i = 0; i < crudMethodNames.Count(); ++i)
 	{
 		// Extract API paths for all the basic CRUD methods
-		String methodName = methodNames.ElementAt(i).ToLower();
-		if(methodName == "create" || methodName == "upsert" || methodName == "exists" || methodName == "findbyid" || methodName == "find"
-		|| methodName == "findone" || methodName == "updateall" || methodName == "deletebyid" || methodName == "count" || methodName == "prototype$updateattributes")
-		{
-		#>				if (modelName == "<#=model.First.First.ToString()#>" && crudMethodName == "<#=methodName#>") return "<#=methodURLS.ElementAt(i)#>";
-<#
-		}
+		#>				{"<#=model.First.First.ToString() + "/" + crudMethodNames.ElementAt(i).ToString()#>", "<#=crudMethodURLS.ElementAt(i)#>"}<#
+		if(i < crudMethodNames.Count() - 1) { #>,
+<#}
+		
 	}
- }
+	parsedOneModelForCRUD = true;
+}
 #>
-                return "Error - no known CRUD path.";
+
+			};
+
+			protected static String getAPIPath(String crudMethodName)
+            {
+				String modelName = (typeof(T)).ToString().Substring((typeof(T)).ToString().IndexOf('.')+1);
+			    crudMethodName = crudMethodName.ToLower();
+				string dictionaryKey = modelName + "/" + crudMethodName;
+
+				if(!APIDictionary.ContainsKey(dictionaryKey))
+					return "Error - no known CRUD path.";
+				return APIDictionary[dictionaryKey];
             }
 
             // All the basic CRUD: Hardcoded
