@@ -17,7 +17,7 @@
 
 <#
 // Uncomment the following line when debugging:
-//string jsonModel = File.ReadAllText("D:/jsonDefs.txt");
+//string jsonModel = File.ReadAllText("D:/debug.txt");
 // ^^
 JObject modelsJSON = JObject.Parse(jsonModel);
 #>
@@ -56,24 +56,18 @@ foreach (var model in modelsJSON.First.First)
 	for(int i = 0; i < methodNames.Count; ++i)
     {
 		string methodName = methodNames.ElementAt(i).ToString();
-		if(methodName == "create" || methodName == "upsert" || methodName == "exists" || methodName == "findbyid" || methodName == "find"
-			|| methodName == "findone" || methodName == "updateall" || methodName == "deletebyid" || methodName == "count" || methodName == "prototype$updateattributes")
+		if(methodName.ToLower() == "create" || methodName.ToLower() == "upsert" || methodName.ToLower() == "exists" || methodName.ToLower() == "findbyid" || methodName.ToLower() == "find"
+			|| methodName.ToLower() == "findone" || methodName.ToLower() == "updateall" || methodName.ToLower() == "deletebyid" || methodName.ToLower() == "count" || methodName.ToLower() == "prototype$updateattributes")
         {
 			crudMethodNames.Add(methodName);
 			crudMethodURLS.Add(methodURLS.ElementAt(i));
         }
-
     }
-
-	/*List<String> crudMethodNames = methodNames.Where(c => (c.ToLower() == "create" || c.ToLower() == "upsert" || c.ToLower() == "exists" 
-															|| c.ToLower() == "findbyid" || c.ToLower() == "find"|| c == "findone" 
-															|| c.ToLower() == "updateall" || c.ToLower() == "deletebyid" || c.ToLower() == "count" 
-															|| c.ToLower() == "prototype$updateattributes")).ToList();*/
 
 	for(int i = 0; i < crudMethodNames.Count(); ++i)
 	{
 		// Extract API paths for all the basic CRUD methods
-		#>				{"<#=model.First.First.ToString() + "/" + crudMethodNames.ElementAt(i).ToString()#>", "<#=crudMethodURLS.ElementAt(i)#>"}<#
+		#>				{"<#=(model.First.First.ToString() + "/" + crudMethodNames.ElementAt(i).ToString()).ToLower()#>", "<#=crudMethodURLS.ElementAt(i)#>"}<#
 		if(i < crudMethodNames.Count() - 1) { #>,
 <#}
 		
@@ -86,12 +80,15 @@ foreach (var model in modelsJSON.First.First)
 
 			protected static String getAPIPath(String crudMethodName)
             {
-				String modelName = (typeof(T)).ToString().Substring((typeof(T)).ToString().IndexOf('.')+1);
-			    crudMethodName = crudMethodName.ToLower();
-				string dictionaryKey = modelName + "/" + crudMethodName;
+				Type baseType = typeof(T);
+				String dictionaryKey = string.Format("{0}/{1}", baseType.Name, crudMethodName).ToLower();
 
 				if(!APIDictionary.ContainsKey(dictionaryKey))
-					return "Error - no known CRUD path.";
+				{
+					if(Gateway.GetDebugMode())
+						Console.WriteLine("Error - no known CRUD path for " + dictionaryKey);
+					throw new Exception();
+				}
 				return APIDictionary[dictionaryKey];
             }
 

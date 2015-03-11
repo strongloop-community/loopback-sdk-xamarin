@@ -1,13 +1,9 @@
 ﻿using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using LBXamarinSDK;
 using Microsoft.CSharp;
-using Newtonsoft.Json.Linq;
-using RestSharp.Portable;
 
 /**
  * Created at Perfected Tech, 2015
@@ -67,7 +63,7 @@ namespace LBXamarinSDKGenerator
 
         /*
          * This function is called through Edge.JS by lb-xm.js. 
-         * A Json definitions is passed and a DLL for the SDK is created as a result.
+         * A Json definitions is passed and a DLL or CS code for the SDK is created as a result.
          */
         public async Task<object> Invoke(object input)
         {
@@ -117,8 +113,8 @@ namespace LBXamarinSDKGenerator
                 return true;
             }
         }
-    
     }
+
 }
 
 
@@ -129,12 +125,8 @@ namespace LBXamarinSDKGenerator
         {
             private static void Main(string[] args)
             {
-
-                //Gateway.SetServerBaseURL(new Uri("http://10.0.0.31:3000/api/"));
-               // Gateway.SetDebugMode(true);
-                //Console.WriteLine(Gateway.isConnected().Result);
-                Console.WriteLine(Customers.Count().Result);
-                Console.ReadKey();
+                Gateway.SetServerBaseURLToSelf();
+                Gateway.SetDebugMode(true);    
             }
         }
     }

@@ -15,7 +15,7 @@
 
 <#
 // Uncomment the followingline when debugging:
-//string jsonModel = File.ReadAllText("D:/jsonDefs.txt");
+//string jsonModel = File.ReadAllText("D:/debug.txt");
 // ^^
 
 JObject modelsJSON = JObject.Parse(jsonModel);
@@ -76,6 +76,12 @@ namespace LBXamarinSDK
 				Console.WriteLine("*******************************************************************************\n");
 				// **** ^^^ VITAL! DO NOT REMOVE! ********
 			}
+		}
+
+		// Debug mode getter
+		public static bool GetDebugMode()
+		{
+			return debugMode;
 		}
 		
 		/*** Cancellation Token methods, define a timeout for a server request ***/

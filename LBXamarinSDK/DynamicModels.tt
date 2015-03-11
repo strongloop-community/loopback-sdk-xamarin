@@ -20,7 +20,7 @@
 <#
 
 // Uncomment the following line when debugging:
-//string jsonModel = File.ReadAllText("D:/jsonDefs.txt");
+//string jsonModel = File.ReadAllText("D:/debug.txt");
 // ^^
 #>
 
