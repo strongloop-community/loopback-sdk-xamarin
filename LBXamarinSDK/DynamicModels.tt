@@ -149,7 +149,7 @@ public static string decapitalize(string input)
 public String jsTypeToCsType(String JSType)
 {
 	if(JSType == "Number")
-		return "double";
+		return "double?";
 
 	if(JSType == "GeoPoint")
 		return "GeoPoint";

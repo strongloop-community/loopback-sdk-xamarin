@@ -15,14 +15,16 @@ using System.Reflection;
 
 namespace UnitTests
 {
-    [TestFixture]
+	[TestFixture ()]
     public class UnitTests
     {
-        [Test]
+		[SetUp]
+		[Test ()]
         public void TestServer1()
         {
+			Console.Write ("asd");
             // Create SDK for server and run it    
-            var loadedDll = NodeJsHandler.StartTest("d:/relationsServer/server/server.js", "test1");
+			var loadedDll = NodeJsHandler.StartTest("C:/Users/Talesnik/Documents/work/lbxamarinsdk-generator/SDK Example/AgentsServer/server/server.js", "test1");
 
             // Make sure it has all the models and repositories
             List<string> models = loadedDll.GetExportedTypes().Select(t => t.ToString()).ToList();
@@ -72,6 +74,8 @@ namespace UnitTests
         // DEBUG:
         public static void Main()
         {
+			UnitTests t = new UnitTests ();
+			t.TestServer1 ();
             // DEBUG:
             //var loadedDll = NodeJsHandler.StartTest("d:/relationsServer/server/server.js", "test1");
 
