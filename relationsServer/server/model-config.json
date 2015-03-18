@@ -1,0 +1,45 @@
+{
+  "_meta": {
+    "sources": [
+      "loopback/common/models",
+      "loopback/server/models",
+      "../common/models",
+      "./models"
+    ]
+  },
+  "User": {
+    "dataSource": "db"
+  },
+  "miniUser": {
+    "dataSource": "db",
+    "public" : true
+  },
+  "AccessToken": {
+    "dataSource": "db",
+    "public": false
+  },
+  "ACL": {
+    "dataSource": "db",
+    "public": false
+  },
+  "RoleMapping": {
+    "dataSource": "db",
+    "public": true
+  },
+  "Role": {
+    "dataSource": "db",
+    "public": true
+  },
+  "Customer": {
+    "dataSource": "db",
+    "public": true
+  },
+  "Review": {
+    "dataSource": "db",
+    "public": true
+  },
+  "Order": {
+    "dataSource": "db",
+    "public": true
+  }
+}
