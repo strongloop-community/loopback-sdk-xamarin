@@ -40,8 +40,7 @@ namespace LBXamarinSDK
 bool parsedOneModelForCRUD = false;
 foreach (var model in modelsJSON.First.First)
 {
-	if(parsedOneModelForCRUD) { #>,
-<#}
+
 	String modelName = model.First.First.ToString();
 	JObject methodsObj = JObject.Parse(model.ElementAt(8).First.ToString());
 	List<String> methodNames = methodsObj.Properties().Select(p => p.Name).ToList();
@@ -66,6 +65,9 @@ foreach (var model in modelsJSON.First.First)
 
 	for(int i = 0; i < crudMethodNames.Count(); ++i)
 	{
+			if(parsedOneModelForCRUD && i == 0) { #>,
+<#}
+
 		// Extract API paths for all the basic CRUD methods
 		#>				{"<#=(model.First.First.ToString() + "/" + crudMethodNames.ElementAt(i).ToString()).ToLower()#>", "<#=crudMethodURLS.ElementAt(i)#>"}<#
 		if(i < crudMethodNames.Count() - 1) { #>,

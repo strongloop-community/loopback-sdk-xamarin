@@ -66,13 +66,30 @@ foreach (var model in modelsJSON.First.First)
 		// Add all fields, with Json tags
         for (int i = 0; i < fields.Count; ++i)
         {
+			if(isPrimitiveType(jsTypeToCsType(fieldsTypes.ElementAt(i))) && !fieldIsArrayList.ElementAt(i) && fields.ElementAt(i) != IDField)
+            {
+				#>		[JsonProperty ("<#=fields.ElementAt(i)#>", NullValueHandling = NullValueHandling.Ignore)]
+<#			
+			#>		private <#=fields.ElementAt(i) == IDField ? idType : jsTypeToCsType(fieldsTypes.ElementAt(i)) + "?" #><#if(fieldIsArrayList.ElementAt(i)){#>[]<#}#> <#= "_" + createLegalVariable(fields.ElementAt(i))#> { get; set; }
+		[JsonIgnore]
+		public <#=jsTypeToCsType(fieldsTypes.ElementAt(i))#> <#= createLegalVariable(fields.ElementAt(i)) #>
+		{
+			get { return <#="_" + createLegalVariable(fields.ElementAt(i))#> ?? new <#= jsTypeToCsType(fieldsTypes.ElementAt(i)) #>(); }
+			set { <#="_" + createLegalVariable(fields.ElementAt(i))#> = value; }
+		}
+
+
+<#
+            }
+			else
+            {
 			if(fieldsNecessities.ElementAt(i) == "True") {#>		 // Required Field. TODO: Validate the existence of this property locally before sending to server
 <#}
 			#>		[JsonProperty ("<#=fields.ElementAt(i)#>", NullValueHandling = NullValueHandling.Ignore)]
 <#			
 			#>		public <#=fields.ElementAt(i) == IDField ? idType : jsTypeToCsType(fieldsTypes.ElementAt(i))#><#if(fieldIsArrayList.ElementAt(i)){#>[]<#}#> <#=createLegalVariable(fields.ElementAt(i))#> { get; set; }
 
-<#}#>
+<#}}#>		
 		// This method identifies the ID field
 		public override string getID()
 		{
@@ -145,11 +162,32 @@ public static string decapitalize(string input)
 	return input.ElementAt(0).ToString().ToLower() + input.Substring(1);
 }
 
+public string getPrivateMemberName(string strName)
+{
+	return "_" + strName;
+}
+
+public string getNonNullableTypeName(string strType)
+{
+	if(strType.ElementAt(strType.Length - 1) == '?')
+    {
+		strType = strType.Substring(strType.Length - 1);
+    }
+	return strType;
+}
+
+public bool isPrimitiveType(string strType)
+{
+	if(strType == "double" || strType == "DateTime" || strType == "bool")
+		return true;
+	return false;
+}
+
 // Converts a loopback type name to c# type name. E.g. Number to double
 public String jsTypeToCsType(String JSType)
 {
 	if(JSType == "Number")
-		return "double?";
+		return "double";
 
 	if(JSType == "GeoPoint")
 		return "GeoPoint";
@@ -161,10 +199,10 @@ public String jsTypeToCsType(String JSType)
 		return "String";
 
 	if(JSType == "Boolean")
-		return "bool?";
+		return "bool";
 
 	if(JSType == "Date")
-		return "DateTime?";
+		return "DateTime";
 
 	if(JSType == "ObjectID")
 		return "String";

@@ -52,7 +52,7 @@ namespace LBXamarinSDK
         [Newtonsoft.Json.JsonProperty("count")]
         public int count { get; set; }
     }
-	
+
 	// Gateway: Communication with Server API
 	public class Gateway
     {
