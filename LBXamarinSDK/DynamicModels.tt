@@ -161,10 +161,10 @@ public String jsTypeToCsType(String JSType)
 		return "String";
 
 	if(JSType == "Boolean")
-		return "bool";
+		return "bool?";
 
 	if(JSType == "Date")
-		return "DateTime";
+		return "DateTime?";
 
 	if(JSType == "ObjectID")
 		return "String";
