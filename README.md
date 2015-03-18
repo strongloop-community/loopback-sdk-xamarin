@@ -33,14 +33,14 @@ Creation of Loopback SDK for Xamarin Studio or C# project.
 
 * Quick summary: 
 The Unit Tests are located in the "UnitTests" folder.
-contains 2 folders:
-	"relationsServer" contains a basic example server.
-	"UnitTests" contains a Xamarin/Visual studio testing solution on the relationsServer.
+contains 2 folders: 
+   "relationsServer" contains a basic example server.
+   "UnitTests" contains a Xamarin/Visual studio testing solution on the relationsServer.
 
-* Important notes:
-	The Testing unit is an example of building tests for a server.
-	Calibrated to work with the relations Server, using classes which are in a LBXamarinSDK.cs file, created specifically for that server.
-	Changing the server without compiling a new LBXamatinSDK.cs will probably cause it not to work, or give flase results.
+* Important notes: 
+   The Testing unit is an example of building tests for a server.
+   Calibrated to work with the relations Server, using classes which are in a LBXamarinSDK.cs file, created specifically for that server.
+   Changing the server without compiling a new LBXamatinSDK.cs will probably cause it not to work, or give flase results.
 
 ### How do I get set up? ###
 
