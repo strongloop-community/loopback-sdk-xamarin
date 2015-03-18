@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using LBXamarinSDK;
 using Microsoft.CSharp;
@@ -20,7 +21,7 @@ namespace LBXamarinSDKGenerator
         * Debug Tool
         */
         public void WriteDefinitionsDebug(string jsonModel)
-        {
+        {   
             Console.WriteLine("Writing server Json definition to D:\\debug.txt");
             System.IO.StreamWriter file = new System.IO.StreamWriter("D:\\debug.txt");
             file.Write(jsonModel);
@@ -117,18 +118,18 @@ namespace LBXamarinSDKGenerator
 
 }
 
-
-    /*
-    namespace LBXamarinSDK
+/*
+// For debugging.
+namespace LBXamarinSDK
+{
+    public class DebugProgram
     {
-        public class DebugProgram
+        private static void Main(string[] args)
         {
-            private static void Main(string[] args)
-            {
-                Gateway.SetServerBaseURLToSelf();
-                Gateway.SetDebugMode(true);    
-            }
+            Gateway.SetServerBaseURLToSelf();
+            Gateway.SetDebugMode(true);    
         }
     }
-   */
- 
+}
+   
+*/

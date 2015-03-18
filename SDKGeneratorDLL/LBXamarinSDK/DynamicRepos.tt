@@ -6,22 +6,22 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.Text.RegularExpressions" #>
 <#@ import namespace="System.IO" #>
-
 <# /* Uncomment the following line when debugging */ #>
-<#/*@assembly name="C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
+<#/*@assembly name="C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/SDKGeneratorDLL/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
 <# /* ^^ */ #>
-
 <#@ import namespace="Newtonsoft.Json" #>
 <#@ import namespace="Newtonsoft.Json.Linq" #>
 <#@ parameter name="jsonModel" type="System.String" #>
-
 <#
 // Uncomment the following line when debugging:
 //string jsonModel = File.ReadAllText("D:/debug.txt");
 // ^^
 JObject modelsJSON = JObject.Parse(jsonModel);
 #>
-// Dynamically created Repo cs file from Json
+
+/**
+ *** Dynamic Repositories ***
+ */
 
 namespace LBXamarinSDK
 {
@@ -243,7 +243,6 @@ foreach (var model in modelsJSON.First.First)
 					returnType = "";
 
 				// Get the parameters passed to the method
-				// TODO: Sort before, make sure that query parameters appear at the end of the list: default params need to be last
 				JObject paramsObj = JObject.Parse(methodJsonToken.First.ElementAt(2).First.ToString());
                 IList<string> paramsNames = paramsObj.Properties().Select(p => p.Name).ToList();
                 IList<string> paramsTypes = methodJsonToken.First.ElementAt(2).First.Select(fieldProperties => fieldProperties.First.First.First.ToString()).ToList();
@@ -262,9 +261,17 @@ foreach (var model in modelsJSON.First.First)
 #>
 			
 			public static async Task<#=returnType#> <#=presentableMethodName#>(<#
+
+				// Sort the parameters so that the query parameters, which we add as default parameters, will be last.
+				var secondaryZip = paramsNames.Zip(paramsTypes, (x, y) => new { x, y }).ToList();
+				var zip = paramsPlacements.Zip(secondaryZip, (x, y) => new { x, y }).OrderBy(pair => pair.x).ToList().ToList();
+				paramsPlacements = zip.Select(pair => pair.x).ToList();
+				paramsNames = zip.Select(pair => pair.y).ToList().Select(pair => pair.x).ToList();
+				paramsTypes = zip.Select(pair => pair.y).ToList().Select(pair => pair.y).ToList();
+				
+				// After being sorted, add the parameter to the argument list of the function
 				for(int i = 0; i < paramsNames.Count; ++i)
 				{
-
 					#><#= determineParamType(paramsTypes.ElementAt(i), paramsPlacements.ElementAt(i), model.First.First.ToString())#> <#=paramsNames.ElementAt(i)#><#=(paramsPlacements.ElementAt(i) == "query" ? " = default(" + convertToCSType(paramsTypes.ElementAt(i)) +")" : "")#><#if (i < paramsNames.Count - 1) { #>, <#}
 				}
 				
@@ -273,7 +280,7 @@ foreach (var model in modelsJSON.First.First)
 				string APIPath = "<#= methodJsonToken.First.First.First.ToString().Trim().Substring(1)#>";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
-<#
+<#				
 				for(int i = 0; i < paramsNames.Count; ++i)
                 {
 					if(paramsPlacements.ElementAt(i) == "query") { #>				queryStrings.Add("<#=paramsNames.ElementAt(i)#>", <#=paramsNames.ElementAt(i)#> != null ? <#=paramsNames.ElementAt(i)#>.ToString() : null);
@@ -368,7 +375,7 @@ foreach (var model in modelsJSON.First.First)
 		}
 
 
-		
+		// Capitalize a name
 		public static string capitalize(string input)
 		{
 			if(string.IsNullOrEmpty(input))

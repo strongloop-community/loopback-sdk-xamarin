@@ -7,16 +7,15 @@
 <#@ import namespace="System.IO" #>
 <#@ assembly name="Microsoft.CSharp" #>
 <#@ import namespace="Microsoft.CSharp" #>
-
 <# /* Uncomment the following line when debugging */ #>
-<#/*@assembly name="C:/Users/PerfectedTech/Documents/visual studio 2013/Projects/LBXamarinSDK/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
+<#/*@assembly name="C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/SDKGeneratorDLL/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
 <# /* ^^ */ #>
-
 <#@ import namespace="Newtonsoft.Json" #>
 <#@ import namespace="Newtonsoft.Json.Linq" #>
 <#@ parameter name="jsonModel" type="System.String" #>
-
-
+/**
+ *** Dynamic Models ***
+ */
 <#
 
 // Uncomment the following line when debugging:
@@ -66,30 +65,42 @@ foreach (var model in modelsJSON.First.First)
 		// Add all fields, with Json tags
         for (int i = 0; i < fields.Count; ++i)
         {
+			string fieldAccessTag;
+			string fieldType;
+			string fieldName;
+			// Do we need a nullable interface for the field or not?
 			if(isPrimitiveType(jsTypeToCsType(fieldsTypes.ElementAt(i))) && !fieldIsArrayList.ElementAt(i) && fields.ElementAt(i) != IDField)
             {
-				#>		[JsonProperty ("<#=fields.ElementAt(i)#>", NullValueHandling = NullValueHandling.Ignore)]
-<#			
-			#>		private <#=fields.ElementAt(i) == IDField ? idType : jsTypeToCsType(fieldsTypes.ElementAt(i)) + "?" #><#if(fieldIsArrayList.ElementAt(i)){#>[]<#}#> <#= "_" + createLegalVariable(fields.ElementAt(i))#> { get; set; }
-		[JsonIgnore]
+				/* This is a primitive type which needs to be exposed to the serializer as nullable, but to the user as true primitive.
+				*  Therefore we add a private nullable field and an true primitive interface field for the user.
+				*/
+				fieldAccessTag = "private";
+				fieldType = nullablify(jsTypeToCsType(fieldsTypes.ElementAt(i)));
+				fieldName = createNullableName(createLegalVariable(fields.ElementAt(i)));
+
+				// Add an interface:
+#>		[JsonIgnore]
 		public <#=jsTypeToCsType(fieldsTypes.ElementAt(i))#> <#= createLegalVariable(fields.ElementAt(i)) #>
 		{
-			get { return <#="_" + createLegalVariable(fields.ElementAt(i))#> ?? new <#= jsTypeToCsType(fieldsTypes.ElementAt(i)) #>(); }
+			get { return <#=createNullableName(createLegalVariable(fields.ElementAt(i)))#> ?? new <#= jsTypeToCsType(fieldsTypes.ElementAt(i)) #>(); }
 			set { <#="_" + createLegalVariable(fields.ElementAt(i))#> = value; }
 		}
-
-
 <#
             }
-			else
+			else // This is not a primitive type field, no special interface needed.
             {
-			if(fieldsNecessities.ElementAt(i) == "True") {#>		 // Required Field. TODO: Validate the existence of this property locally before sending to server
-<#}
-			#>		[JsonProperty ("<#=fields.ElementAt(i)#>", NullValueHandling = NullValueHandling.Ignore)]
-<#			
-			#>		public <#=fields.ElementAt(i) == IDField ? idType : jsTypeToCsType(fieldsTypes.ElementAt(i))#><#if(fieldIsArrayList.ElementAt(i)){#>[]<#}#> <#=createLegalVariable(fields.ElementAt(i))#> { get; set; }
+				fieldAccessTag = "public";
+				fieldType = jsTypeToCsType(fieldsTypes.ElementAt(i));
+				fieldName = createLegalVariable(fields.ElementAt(i));
+			}
 
-<#}}#>		
+			// Add the field itself:
+			#>		[JsonProperty ("<#=fields.ElementAt(i)#>", NullValueHandling = NullValueHandling.Ignore)]
+		<#= fieldAccessTag #> <#=fields.ElementAt(i) == IDField ? idType : fieldType#><#if(fieldIsArrayList.ElementAt(i)){#>[]<#}#> <#=fieldName#> { get; set; }
+
+<#
+		
+		}#>		
 		// This method identifies the ID field
 		public override string getID()
 		{
@@ -97,7 +108,6 @@ foreach (var model in modelsJSON.First.First)
 		}
 	}
 <#}#>
-
 
 	// Relationship classes:
 <#
@@ -133,12 +143,9 @@ foreach (var model in modelsJSON.First.First)
     }
 }
 
-if(existentRelationshipResponses.Count == 0) {#> // None.<#}
-#>
-
-
-
-}
+if(existentRelationshipResponses.Count == 0) {#>	// None.
+<#}
+#>}
 // Eof
 <#+
 
@@ -162,20 +169,19 @@ public static string decapitalize(string input)
 	return input.ElementAt(0).ToString().ToLower() + input.Substring(1);
 }
 
-public string getPrivateMemberName(string strName)
+// Creates a nullable typename out of a typename
+public string nullablify(string strType)
+{
+	return strType + "?";
+}
+
+// Creates a private member variable name by adding an underscore to the name
+public string createNullableName(string strName)
 {
 	return "_" + strName;
 }
 
-public string getNonNullableTypeName(string strType)
-{
-	if(strType.ElementAt(strType.Length - 1) == '?')
-    {
-		strType = strType.Substring(strType.Length - 1);
-    }
-	return strType;
-}
-
+// Checks if the given type is primitive
 public bool isPrimitiveType(string strType)
 {
 	if(strType == "double" || strType == "DateTime" || strType == "bool")
