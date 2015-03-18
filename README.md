@@ -45,6 +45,8 @@ contains 2 folders
 
 ### How do I get set up? ###
 
+** Setup**
+
 * Install Server
 
         1. Go into relationsServer and run 'npm install' in terminal/shell
@@ -64,7 +66,7 @@ contains 2 folders
 
         1. No special setup is needed
 
-* After Setup
+** Running Tests**
 
         1. Go into relationsServer and run 'slc run' (close the server if it had run, and run it again)
          !Important! This part should be done each time you run a test, as test change data in the server.
@@ -80,7 +82,7 @@ contains 2 folders
         More info on NUnit can be foud here 
         http://nunit.org/index.php?p=vsTestAdapter&r=2.6.3
 
-*Xamarin 
+* Xamarin  
 
         1. open UnitTests.sln located in "UnitTests" folder
         2. right click "UnitTests" in the solution explorer -> run unit
