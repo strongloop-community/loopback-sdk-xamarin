@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LBXamarinSDKGenerator", "LBXamarinSDK\LBXamarinSDKGenerator.csproj", "{C9D8D106-D4C0-4875-9DD5-E1F300C4DCEC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests\UnitTests.csproj", "{96BF2D86-43ED-42FB-A544-D2DF72D1897B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,10 +11,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{96BF2D86-43ED-42FB-A544-D2DF72D1897B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{96BF2D86-43ED-42FB-A544-D2DF72D1897B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{96BF2D86-43ED-42FB-A544-D2DF72D1897B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{96BF2D86-43ED-42FB-A544-D2DF72D1897B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C9D8D106-D4C0-4875-9DD5-E1F300C4DCEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C9D8D106-D4C0-4875-9DD5-E1F300C4DCEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9D8D106-D4C0-4875-9DD5-E1F300C4DCEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
