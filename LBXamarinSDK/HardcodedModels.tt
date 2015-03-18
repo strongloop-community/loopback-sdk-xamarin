@@ -221,7 +221,8 @@ namespace LBXamarinSDK
 			if (method == "POST" || method == "PUT")
             {
 				request.AddHeader("ContentType", "application/json");
-				request.AddParameter ("application/json", json, ParameterType.RequestBody);
+				var o12 = JObject.Parse(json);
+				request.AddParameter ("application/json", o12, ParameterType.RequestBody);
 			}
 
 			// Make the request, return response
