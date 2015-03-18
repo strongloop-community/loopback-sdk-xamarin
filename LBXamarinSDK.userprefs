@@ -1,14 +1,15 @@
 ﻿<Properties StartupItem="LBXamarinSDK/LBXamarinSDKGenerator.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="UnitTests/UnitTests/Test.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="LBXamarinSDK/HardcodedModels.tt">
     <Files>
       <File FileName="LBXamarinSDK/DynamicModels.tt" Line="1" Column="1" />
       <File FileName="lb-xm/bin/LBXamarinSDK.cs" Line="1" Column="1" />
       <File FileName="LBXamarinSDK/DynamicRepos.tt" Line="1" Column="1" />
       <File FileName="LBXamarinSDK/DynamicModels.cs" Line="1" Column="1" />
-      <File FileName="LBXamarinSDK/HardcodedModels.tt" Line="23" Column="23" />
+      <File FileName="LBXamarinSDK/HardcodedModels.tt" Line="36" Column="36" />
       <File FileName="UnitTests/UnitTests/b_TestMiniUserCRUDAsAdmin.cs" Line="1" Column="1" />
       <File FileName="UnitTests/UnitTests/Test.cs" Line="1" Column="1" />
+      <File FileName="LBXamarinSDK/HardcodedModels.cs" Line="6431" Column="6431" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
