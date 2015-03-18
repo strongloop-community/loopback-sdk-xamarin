@@ -32,8 +32,8 @@ Creation of Loopback SDK for Xamarin Studio or C# project.
 ### Testers for LBXamarinSDK ###
 
 * Quick summary: 
-	The Unit Tests are located in the "UnitTests" folder.
-	contains 2 folders:
+The Unit Tests are located in the "UnitTests" folder.
+contains 2 folders:
 	"relationsServer" contains a basic example server.
 	"UnitTests" contains a Xamarin/Visual studio testing solution on the relationsServer.
 
@@ -79,12 +79,3 @@ It is important to do the setup while the project is open!
 *Xamarin
 	1. open UnitTests.sln
 	2. right click "UnitTests" in the solution explorer -> run unit
-		
-
-
-
-
-
-
-
-
