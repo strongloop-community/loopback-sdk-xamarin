@@ -31,51 +31,56 @@ Creation of Loopback SDK for Xamarin Studio or C# project.
 
 ### Testers for LBXamarinSDK ###
 
-* Quick summary: 
+* Quick summary 
+
 The Unit Tests are located in the "UnitTests" folder.
-contains 2 folders: 
+contains 2 folders
    "relationsServer" contains a basic example server.
    "UnitTests" contains a Xamarin/Visual studio testing solution on the relationsServer.
 
-* Important notes: 
-   The Testing unit is an example of building tests for a server.
-   Calibrated to work with the relations Server, using classes which are in a LBXamarinSDK.cs file, created specifically for that server.
-   Changing the server without compiling a new LBXamatinSDK.cs will probably cause it not to work, or give flase results.
+* Important notes
+   The Testing unit is an example of building tests for a server
+   Calibrated to work with the relations Server, using classes which are in a LBXamarinSDK.cs file, created specifically for that server
+   Changing the server without compiling a new LBXamatinSDK.cs will probably cause it not to work, or give flase results
 
 ### How do I get set up? ###
 
-1. Go into relationsServer and run 'npm install' in terminal/shell
+* Install Server
 
-*Visual studio
-It is important to do the setup while the project is open!
-	1. open 'UnitTests.csproj' located in UnitTests/UnitTests
-	2. Make sure you have NuGet installed:
+        1. Go into relationsServer and run 'npm install' in terminal/shell
+
+* Visual studio 
+
+        1. It is important to do the setup while the project is open
+        2. open 'UnitTests.csproj' located in UnitTests/UnitTests
+        3. Make sure you have NuGet installed:
 		-Tools-> Extentions and Updates
 		-Select online on left tab
 		-Search for NuGet Package manager
-	3. Make sure you have NUnit testing adapter installed:
+        4. Make sure you have NUnit testing adapter installed:
 		instructions: http://nunit.org/index.php?p=vsTestAdapter&r=2.6.3
 
-*Xamarin
-	1. No special setup is needed
+* Xamarin 
+
+        1. No special setup is needed
 
 * After Setup
 
-1. Go into relationsServer and run 'slc run' (close the server if it had run, and run it again).
-!Important! This part should be done each time you run a test, as test change data in the server.
+        1. Go into relationsServer and run 'slc run' (close the server if it had run, and run it again)
+         !Important! This part should be done each time you run a test, as test change data in the server.
+        2. If you made changes to the relationsServer
+        -Comlpile a new LBXamatinSDK.cs and replace the existing one
+        -Make sure that the code corresponds to changes on expected test results
 
-2. If you made changes to the relationsServer
-	-Comlpile a new LBXamatinSDK.cs and replace the existing one
-	-Make sure that the code corresponds to changes on expected test results
+* Visual Studio 
 
-*Visual Studio
-	1. open 'UnitTests.csproj' located in UnitTests/UnitTests
-	2. Test -> Windows -> Test Explorer
-	3. The first time you run tests click Run All in the tab that opens
-	
-	More info on NUnit can be foud here 
-	http://nunit.org/index.php?p=vsTestAdapter&r=2.6.3
+        1. open 'UnitTests.csproj' located in UnitTests/UnitTests
+        2. Test -> Windows -> Test Explorer
+        3. The first time you run tests click Run All in the tab that opens
+        More info on NUnit can be foud here 
+        http://nunit.org/index.php?p=vsTestAdapter&r=2.6.3
 
-*Xamarin
-	1. open UnitTests.sln
-	2. right click "UnitTests" in the solution explorer -> run unit
+*Xamarin 
+
+        1. open UnitTests.sln located in "UnitTests" folder
+        2. right click "UnitTests" in the solution explorer -> run unit
