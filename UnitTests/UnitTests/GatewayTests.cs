@@ -40,6 +40,7 @@ namespace UnitTests
 			Gateway.SetServerBaseURL (new Uri("http://asd.com"));
 			Assert.AreEqual (false, Gateway.isConnected ().Result);
 			Gateway.SetServerBaseURLToSelf ();
+			Gateway.SetDebugMode (true);
 			Assert.AreEqual (true, Gateway.isConnected ().Result);
 		}
 			

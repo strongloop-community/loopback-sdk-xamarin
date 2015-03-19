@@ -1,8 +1,7 @@
+/**
+ *** Hardcoded Models ***
+ */
 
-
-
-
-// Usings for all 3 templates
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
@@ -32,7 +31,7 @@ namespace LBXamarinSDK
         [Newtonsoft.Json.JsonProperty("count")]
         public int count { get; set; }
     }
-	
+
 	// Gateway: Communication with Server API
 	public class Gateway
     {
@@ -50,11 +49,9 @@ namespace LBXamarinSDK
 			debugMode = isDebugMode;
 			if(debugMode)
 			{
-				// **** VITAL! DO NOT REMOVE! ************
 				Console.WriteLine("******************************");
 				Console.WriteLine("** SDK Gateway constructor. **");
 				Console.WriteLine("******************************\n");
-				// **** ^^^ VITAL! DO NOT REMOVE! ********
 			}
 		}
 
@@ -64,7 +61,7 @@ namespace LBXamarinSDK
 			return debugMode;
 		}
 		
-		/*** Cancellation Token methods, define a timeout for a server request ***/
+		/*** Cancellation-Token methods, define a timeout for a server request ***/
 		private static void ResetCancellationToken()
 		{
 			cts = new CancellationTokenSource();
@@ -201,7 +198,14 @@ namespace LBXamarinSDK
 			if (method == "POST" || method == "PUT")
             {
 				request.AddHeader("ContentType", "application/json");
-				request.AddParameter ("application/json", json, ParameterType.RequestBody);
+				try
+				{
+					request.AddParameter ("application/json", JObject.Parse(json), ParameterType.RequestBody);
+				}
+				catch(Exception)
+				{
+					request.AddParameter ("application/json", json, ParameterType.RequestBody);
+				}
 			}
 
 			// Make the request, return response
@@ -250,7 +254,7 @@ namespace LBXamarinSDK
         }
     }
 
-	// Allow conversion between the return type of login methods into AccessToken
+	// Allow conversion between the return type of login methods into AccessToken, e.g. "AccessToken myAccessToken = await Users.login(someCredentials);
 	// TODO: Add this jobject->class implicit conversion as a templated function for all classes inheriting from model
 	public partial class AccessToken : Model
     {
@@ -271,10 +275,23 @@ namespace LBXamarinSDK
         public string id { get; set; }
 
         [JsonProperty("ttl", NullValueHandling = NullValueHandling.Ignore)]
-        public long ttl { get; set; }
+        public long? _ttl { get; set; }
+		[JsonIgnore]
+		public long ttl
+		{
+			get { return _ttl ?? new long(); }
+			set { _ttl = value; }
+		}
 
         [JsonProperty("created", NullValueHandling = NullValueHandling.Ignore)]
-        public DateTime created { get; set; }
+        public DateTime? _created { get; set; }
+		[JsonIgnore]
+		public DateTime created
+		{
+			get { return _created ?? new DateTime(); }
+			set { _created = value; }
+		}
+
 
         [JsonProperty("userID", NullValueHandling = NullValueHandling.Ignore)]
         public string userID { get; set; }
@@ -289,16 +306,28 @@ namespace LBXamarinSDK
 	{
 		// Must be leq than 90: TODO: Add attributes or setter limitations
 		[JsonProperty("lat", NullValueHandling = NullValueHandling.Ignore)]
-		public double Latitude { get; set; }
+		public double? _Latitude { get; set; }
+		[JsonIgnore]
+		public double Latitude
+		{
+			get { return _Latitude ?? new double(); }
+			set { _Latitude = value; }
+		}
 
 		[JsonProperty("lng", NullValueHandling = NullValueHandling.Ignore)]
-		public double Longtitude { get; set; }
+		public double? _Longtitude { get; set; }
+		[JsonIgnore]
+		public double Longtitude
+		{
+			get { return _Longtitude ?? new double(); }
+			set { _Longtitude = value; }
+		}
 	}
 }
 
-
-
-// Dynamically created Repo cs file from Json
+/**
+ *** Dynamic Repositories ***
+ */
 
 namespace LBXamarinSDK
 {
@@ -556,14 +585,14 @@ namespace LBXamarinSDK
 				
 			}
 			
-			public static async Task<AccessToken> updateByIdAccessTokens(string id, string fk, AccessToken data)
+			public static async Task<AccessToken> updateByIdAccessTokens(AccessToken data, string id, string fk)
 			{
 				string APIPath = "Users/:id/accessTokens/:fk";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
+				bodyJSON = JsonConvert.SerializeObject(data);
 				APIPath = APIPath.Replace(":id", (string)id);
 				APIPath = APIPath.Replace(":fk", (string)fk);
-				bodyJSON = JsonConvert.SerializeObject(data);
 				var response = await Gateway.PerformRequest<AccessToken>(APIPath, bodyJSON, "PUT", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -579,13 +608,13 @@ namespace LBXamarinSDK
 				return response;
 			}
 			
-			public static async Task<AccessToken> createAccessTokens(string id, AccessToken data)
+			public static async Task<AccessToken> createAccessTokens(AccessToken data, string id)
 			{
 				string APIPath = "Users/:id/accessTokens";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
-				APIPath = APIPath.Replace(":id", (string)id);
 				bodyJSON = JsonConvert.SerializeObject(data);
+				APIPath = APIPath.Replace(":id", (string)id);
 				var response = await Gateway.PerformRequest<AccessToken>(APIPath, bodyJSON, "POST", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -678,14 +707,14 @@ namespace LBXamarinSDK
 				
 			}
 			
-			public static async Task<AccessToken> updateByIdAccessTokens(string id, string fk, AccessToken data)
+			public static async Task<AccessToken> updateByIdAccessTokens(AccessToken data, string id, string fk)
 			{
 				string APIPath = "miniUsers/:id/accessTokens/:fk";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
+				bodyJSON = JsonConvert.SerializeObject(data);
 				APIPath = APIPath.Replace(":id", (string)id);
 				APIPath = APIPath.Replace(":fk", (string)fk);
-				bodyJSON = JsonConvert.SerializeObject(data);
 				var response = await Gateway.PerformRequest<AccessToken>(APIPath, bodyJSON, "PUT", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -712,26 +741,26 @@ namespace LBXamarinSDK
 				
 			}
 			
-			public static async Task<Role> updateByIdRoles(string id, string fk, Role data)
+			public static async Task<Role> updateByIdRoles(Role data, string id, string fk)
 			{
 				string APIPath = "miniUsers/:id/roles/:fk";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
+				bodyJSON = JsonConvert.SerializeObject(data);
 				APIPath = APIPath.Replace(":id", (string)id);
 				APIPath = APIPath.Replace(":fk", (string)fk);
-				bodyJSON = JsonConvert.SerializeObject(data);
 				var response = await Gateway.PerformRequest<Role>(APIPath, bodyJSON, "PUT", queryStrings).ConfigureAwait(false);
 				return response;
 			}
 			
-			public static async Task<RoleMapping> linkRoles(string id, string fk, RoleMapping data)
+			public static async Task<RoleMapping> linkRoles(RoleMapping data, string id, string fk)
 			{
 				string APIPath = "miniUsers/:id/roles/rel/:fk";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
+				bodyJSON = JsonConvert.SerializeObject(data);
 				APIPath = APIPath.Replace(":id", (string)id);
 				APIPath = APIPath.Replace(":fk", (string)fk);
-				bodyJSON = JsonConvert.SerializeObject(data);
 				var response = await Gateway.PerformRequest<RoleMapping>(APIPath, bodyJSON, "PUT", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -769,13 +798,13 @@ namespace LBXamarinSDK
 				return response;
 			}
 			
-			public static async Task<AccessToken> createAccessTokens(string id, AccessToken data)
+			public static async Task<AccessToken> createAccessTokens(AccessToken data, string id)
 			{
 				string APIPath = "miniUsers/:id/accessTokens";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
-				APIPath = APIPath.Replace(":id", (string)id);
 				bodyJSON = JsonConvert.SerializeObject(data);
+				APIPath = APIPath.Replace(":id", (string)id);
 				var response = await Gateway.PerformRequest<AccessToken>(APIPath, bodyJSON, "POST", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -812,13 +841,13 @@ namespace LBXamarinSDK
 				return response;
 			}
 			
-			public static async Task<Role> createRoles(string id, Role data)
+			public static async Task<Role> createRoles(Role data, string id)
 			{
 				string APIPath = "miniUsers/:id/roles";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
-				APIPath = APIPath.Replace(":id", (string)id);
 				bodyJSON = JsonConvert.SerializeObject(data);
+				APIPath = APIPath.Replace(":id", (string)id);
 				var response = await Gateway.PerformRequest<Role>(APIPath, bodyJSON, "POST", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -880,14 +909,14 @@ namespace LBXamarinSDK
 				
 			}
 			
-			public static async Task<RoleMapping> updateByIdForRole(string id, string fk, RoleMapping data)
+			public static async Task<RoleMapping> updateByIdForRole(RoleMapping data, string id, string fk)
 			{
 				string APIPath = "Roles/:id/principals/:fk";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
+				bodyJSON = JsonConvert.SerializeObject(data);
 				APIPath = APIPath.Replace(":id", (string)id);
 				APIPath = APIPath.Replace(":fk", (string)fk);
-				bodyJSON = JsonConvert.SerializeObject(data);
 				var response = await Gateway.PerformRequest<RoleMapping>(APIPath, bodyJSON, "PUT", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -903,13 +932,13 @@ namespace LBXamarinSDK
 				return response;
 			}
 			
-			public static async Task<RoleMapping> createForRole(string id, RoleMapping data)
+			public static async Task<RoleMapping> createForRole(RoleMapping data, string id)
 			{
 				string APIPath = "Roles/:id/principals";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
-				APIPath = APIPath.Replace(":id", (string)id);
 				bodyJSON = JsonConvert.SerializeObject(data);
+				APIPath = APIPath.Replace(":id", (string)id);
 				var response = await Gateway.PerformRequest<RoleMapping>(APIPath, bodyJSON, "POST", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -960,14 +989,14 @@ namespace LBXamarinSDK
 				
 			}
 			
-			public static async Task<RoleMapping> updateByIdPrincipals(string id, string fk, RoleMapping data)
+			public static async Task<RoleMapping> updateByIdPrincipals(RoleMapping data, string id, string fk)
 			{
 				string APIPath = "Roles/:id/principals/:fk";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
+				bodyJSON = JsonConvert.SerializeObject(data);
 				APIPath = APIPath.Replace(":id", (string)id);
 				APIPath = APIPath.Replace(":fk", (string)fk);
-				bodyJSON = JsonConvert.SerializeObject(data);
 				var response = await Gateway.PerformRequest<RoleMapping>(APIPath, bodyJSON, "PUT", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -983,13 +1012,13 @@ namespace LBXamarinSDK
 				return response;
 			}
 			
-			public static async Task<RoleMapping> createPrincipals(string id, RoleMapping data)
+			public static async Task<RoleMapping> createPrincipals(RoleMapping data, string id)
 			{
 				string APIPath = "Roles/:id/principals";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
-				APIPath = APIPath.Replace(":id", (string)id);
 				bodyJSON = JsonConvert.SerializeObject(data);
+				APIPath = APIPath.Replace(":id", (string)id);
 				var response = await Gateway.PerformRequest<RoleMapping>(APIPath, bodyJSON, "POST", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -1037,26 +1066,26 @@ namespace LBXamarinSDK
 				
 			}
 			
-			public static async Task<Role> updateByIdForminiUser(string id, string fk, Role data)
+			public static async Task<Role> updateByIdForminiUser(Role data, string id, string fk)
 			{
 				string APIPath = "miniUsers/:id/roles/:fk";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
+				bodyJSON = JsonConvert.SerializeObject(data);
 				APIPath = APIPath.Replace(":id", (string)id);
 				APIPath = APIPath.Replace(":fk", (string)fk);
-				bodyJSON = JsonConvert.SerializeObject(data);
 				var response = await Gateway.PerformRequest<Role>(APIPath, bodyJSON, "PUT", queryStrings).ConfigureAwait(false);
 				return response;
 			}
 			
-			public static async Task<RoleMapping> linkForminiUser(string id, string fk, RoleMapping data)
+			public static async Task<RoleMapping> linkForminiUser(RoleMapping data, string id, string fk)
 			{
 				string APIPath = "miniUsers/:id/roles/rel/:fk";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
+				bodyJSON = JsonConvert.SerializeObject(data);
 				APIPath = APIPath.Replace(":id", (string)id);
 				APIPath = APIPath.Replace(":fk", (string)fk);
-				bodyJSON = JsonConvert.SerializeObject(data);
 				var response = await Gateway.PerformRequest<RoleMapping>(APIPath, bodyJSON, "PUT", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -1094,13 +1123,13 @@ namespace LBXamarinSDK
 				return response;
 			}
 			
-			public static async Task<Role> createForminiUser(string id, Role data)
+			public static async Task<Role> createForminiUser(Role data, string id)
 			{
 				string APIPath = "miniUsers/:id/roles";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
-				APIPath = APIPath.Replace(":id", (string)id);
 				bodyJSON = JsonConvert.SerializeObject(data);
+				APIPath = APIPath.Replace(":id", (string)id);
 				var response = await Gateway.PerformRequest<Role>(APIPath, bodyJSON, "POST", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -1162,14 +1191,14 @@ namespace LBXamarinSDK
 				
 			}
 			
-			public static async Task<Review> updateByIdReviews(string id, string fk, Review data)
+			public static async Task<Review> updateByIdReviews(Review data, string id, string fk)
 			{
 				string APIPath = "Customers/:id/reviews/:fk";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
+				bodyJSON = JsonConvert.SerializeObject(data);
 				APIPath = APIPath.Replace(":id", (string)id);
 				APIPath = APIPath.Replace(":fk", (string)fk);
-				bodyJSON = JsonConvert.SerializeObject(data);
 				var response = await Gateway.PerformRequest<Review>(APIPath, bodyJSON, "PUT", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -1196,14 +1225,14 @@ namespace LBXamarinSDK
 				
 			}
 			
-			public static async Task<Order> updateByIdOrders(string id, string fk, Order data)
+			public static async Task<Order> updateByIdOrders(Order data, string id, string fk)
 			{
 				string APIPath = "Customers/:id/orders/:fk";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
+				bodyJSON = JsonConvert.SerializeObject(data);
 				APIPath = APIPath.Replace(":id", (string)id);
 				APIPath = APIPath.Replace(":fk", (string)fk);
-				bodyJSON = JsonConvert.SerializeObject(data);
 				var response = await Gateway.PerformRequest<Order>(APIPath, bodyJSON, "PUT", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -1219,13 +1248,13 @@ namespace LBXamarinSDK
 				return response;
 			}
 			
-			public static async Task<Review> createReviews(string id, Review data)
+			public static async Task<Review> createReviews(Review data, string id)
 			{
 				string APIPath = "Customers/:id/reviews";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
-				APIPath = APIPath.Replace(":id", (string)id);
 				bodyJSON = JsonConvert.SerializeObject(data);
+				APIPath = APIPath.Replace(":id", (string)id);
 				var response = await Gateway.PerformRequest<Review>(APIPath, bodyJSON, "POST", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -1262,13 +1291,13 @@ namespace LBXamarinSDK
 				return response;
 			}
 			
-			public static async Task<Order> createOrders(string id, Order data)
+			public static async Task<Order> createOrders(Order data, string id)
 			{
 				string APIPath = "Customers/:id/orders";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
-				APIPath = APIPath.Replace(":id", (string)id);
 				bodyJSON = JsonConvert.SerializeObject(data);
+				APIPath = APIPath.Replace(":id", (string)id);
 				var response = await Gateway.PerformRequest<Order>(APIPath, bodyJSON, "POST", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -1391,14 +1420,14 @@ namespace LBXamarinSDK
 				
 			}
 			
-			public static async Task<Review> updateByIdForCustomer(string id, string fk, Review data)
+			public static async Task<Review> updateByIdForCustomer(Review data, string id, string fk)
 			{
 				string APIPath = "Customers/:id/reviews/:fk";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
+				bodyJSON = JsonConvert.SerializeObject(data);
 				APIPath = APIPath.Replace(":id", (string)id);
 				APIPath = APIPath.Replace(":fk", (string)fk);
-				bodyJSON = JsonConvert.SerializeObject(data);
 				var response = await Gateway.PerformRequest<Review>(APIPath, bodyJSON, "PUT", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -1414,13 +1443,13 @@ namespace LBXamarinSDK
 				return response;
 			}
 			
-			public static async Task<Review> createForCustomer(string id, Review data)
+			public static async Task<Review> createForCustomer(Review data, string id)
 			{
 				string APIPath = "Customers/:id/reviews";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
-				APIPath = APIPath.Replace(":id", (string)id);
 				bodyJSON = JsonConvert.SerializeObject(data);
+				APIPath = APIPath.Replace(":id", (string)id);
 				var response = await Gateway.PerformRequest<Review>(APIPath, bodyJSON, "POST", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -1482,14 +1511,14 @@ namespace LBXamarinSDK
 				
 			}
 			
-			public static async Task<Order> updateByIdForCustomer(string id, string fk, Order data)
+			public static async Task<Order> updateByIdForCustomer(Order data, string id, string fk)
 			{
 				string APIPath = "Customers/:id/orders/:fk";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
+				bodyJSON = JsonConvert.SerializeObject(data);
 				APIPath = APIPath.Replace(":id", (string)id);
 				APIPath = APIPath.Replace(":fk", (string)fk);
-				bodyJSON = JsonConvert.SerializeObject(data);
 				var response = await Gateway.PerformRequest<Order>(APIPath, bodyJSON, "PUT", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -1505,13 +1534,13 @@ namespace LBXamarinSDK
 				return response;
 			}
 			
-			public static async Task<Order> createForCustomer(string id, Order data)
+			public static async Task<Order> createForCustomer(Order data, string id)
 			{
 				string APIPath = "Customers/:id/orders";
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				string bodyJSON = "";
-				APIPath = APIPath.Replace(":id", (string)id);
 				bodyJSON = JsonConvert.SerializeObject(data);
+				APIPath = APIPath.Replace(":id", (string)id);
 				var response = await Gateway.PerformRequest<Order>(APIPath, bodyJSON, "POST", queryStrings).ConfigureAwait(false);
 				return response;
 			}
@@ -1541,10 +1570,9 @@ namespace LBXamarinSDK
 	}
 }
 
-
-
-
-
+/**
+ *** Dynamic Models ***
+ */
 
 namespace LBXamarinSDK
 {
@@ -1556,7 +1584,6 @@ namespace LBXamarinSDK
 		[JsonProperty ("username", NullValueHandling = NullValueHandling.Ignore)]
 		public String username { get; set; }
 
-		 // Required Field. TODO: Validate the existence of this property locally before sending to server
 		[JsonProperty ("password", NullValueHandling = NullValueHandling.Ignore)]
 		public String password { get; set; }
 
@@ -1566,12 +1593,17 @@ namespace LBXamarinSDK
 		[JsonProperty ("challenges", NullValueHandling = NullValueHandling.Ignore)]
 		public Object challenges { get; set; }
 
-		 // Required Field. TODO: Validate the existence of this property locally before sending to server
 		[JsonProperty ("email", NullValueHandling = NullValueHandling.Ignore)]
 		public String email { get; set; }
 
+		[JsonIgnore]
+		public bool emailVerified
+		{
+			get { return _emailVerified ?? new bool(); }
+			set { _emailVerified = value; }
+		}
 		[JsonProperty ("emailVerified", NullValueHandling = NullValueHandling.Ignore)]
-		public bool? emailVerified { get; set; }
+		private bool? _emailVerified { get; set; }
 
 		[JsonProperty ("verificationToken", NullValueHandling = NullValueHandling.Ignore)]
 		public String verificationToken { get; set; }
@@ -1579,15 +1611,28 @@ namespace LBXamarinSDK
 		[JsonProperty ("status", NullValueHandling = NullValueHandling.Ignore)]
 		public String status { get; set; }
 
+		[JsonIgnore]
+		public DateTime created
+		{
+			get { return _created ?? new DateTime(); }
+			set { _created = value; }
+		}
 		[JsonProperty ("created", NullValueHandling = NullValueHandling.Ignore)]
-		public DateTime? created { get; set; }
+		private DateTime? _created { get; set; }
 
+		[JsonIgnore]
+		public DateTime lastUpdated
+		{
+			get { return _lastUpdated ?? new DateTime(); }
+			set { _lastUpdated = value; }
+		}
 		[JsonProperty ("lastUpdated", NullValueHandling = NullValueHandling.Ignore)]
-		public DateTime? lastUpdated { get; set; }
+		private DateTime? _lastUpdated { get; set; }
 
 		[JsonProperty ("id", NullValueHandling = NullValueHandling.Ignore)]
 		public string id { get; set; }
 
+		
 		// This method identifies the ID field
 		public override string getID()
 		{
@@ -1602,7 +1647,6 @@ namespace LBXamarinSDK
 		[JsonProperty ("username", NullValueHandling = NullValueHandling.Ignore)]
 		public String username { get; set; }
 
-		 // Required Field. TODO: Validate the existence of this property locally before sending to server
 		[JsonProperty ("password", NullValueHandling = NullValueHandling.Ignore)]
 		public String password { get; set; }
 
@@ -1612,12 +1656,17 @@ namespace LBXamarinSDK
 		[JsonProperty ("challenges", NullValueHandling = NullValueHandling.Ignore)]
 		public Object challenges { get; set; }
 
-		 // Required Field. TODO: Validate the existence of this property locally before sending to server
 		[JsonProperty ("email", NullValueHandling = NullValueHandling.Ignore)]
 		public String email { get; set; }
 
+		[JsonIgnore]
+		public bool emailVerified
+		{
+			get { return _emailVerified ?? new bool(); }
+			set { _emailVerified = value; }
+		}
 		[JsonProperty ("emailVerified", NullValueHandling = NullValueHandling.Ignore)]
-		public bool? emailVerified { get; set; }
+		private bool? _emailVerified { get; set; }
 
 		[JsonProperty ("verificationToken", NullValueHandling = NullValueHandling.Ignore)]
 		public String verificationToken { get; set; }
@@ -1625,15 +1674,28 @@ namespace LBXamarinSDK
 		[JsonProperty ("status", NullValueHandling = NullValueHandling.Ignore)]
 		public String status { get; set; }
 
+		[JsonIgnore]
+		public DateTime created
+		{
+			get { return _created ?? new DateTime(); }
+			set { _created = value; }
+		}
 		[JsonProperty ("created", NullValueHandling = NullValueHandling.Ignore)]
-		public DateTime? created { get; set; }
+		private DateTime? _created { get; set; }
 
+		[JsonIgnore]
+		public DateTime lastUpdated
+		{
+			get { return _lastUpdated ?? new DateTime(); }
+			set { _lastUpdated = value; }
+		}
 		[JsonProperty ("lastUpdated", NullValueHandling = NullValueHandling.Ignore)]
-		public DateTime? lastUpdated { get; set; }
+		private DateTime? _lastUpdated { get; set; }
 
 		[JsonProperty ("id", NullValueHandling = NullValueHandling.Ignore)]
 		public string id { get; set; }
 
+		
 		// This method identifies the ID field
 		public override string getID()
 		{
@@ -1651,9 +1713,16 @@ namespace LBXamarinSDK
 		[JsonProperty ("principalId", NullValueHandling = NullValueHandling.Ignore)]
 		public String principalId { get; set; }
 
+		[JsonIgnore]
+		public double roleId
+		{
+			get { return _roleId ?? new double(); }
+			set { _roleId = value; }
+		}
 		[JsonProperty ("roleId", NullValueHandling = NullValueHandling.Ignore)]
-		public double? roleId { get; set; }
+		private double? _roleId { get; set; }
 
+		
 		// This method identifies the ID field
 		public override string getID()
 		{
@@ -1665,19 +1734,31 @@ namespace LBXamarinSDK
 		[JsonProperty ("id", NullValueHandling = NullValueHandling.Ignore)]
 		public string id { get; set; }
 
-		 // Required Field. TODO: Validate the existence of this property locally before sending to server
 		[JsonProperty ("name", NullValueHandling = NullValueHandling.Ignore)]
 		public String name { get; set; }
 
 		[JsonProperty ("description", NullValueHandling = NullValueHandling.Ignore)]
 		public String description { get; set; }
 
+		[JsonIgnore]
+		public DateTime created
+		{
+			get { return _created ?? new DateTime(); }
+			set { _created = value; }
+		}
 		[JsonProperty ("created", NullValueHandling = NullValueHandling.Ignore)]
-		public DateTime? created { get; set; }
+		private DateTime? _created { get; set; }
 
+		[JsonIgnore]
+		public DateTime modified
+		{
+			get { return _modified ?? new DateTime(); }
+			set { _modified = value; }
+		}
 		[JsonProperty ("modified", NullValueHandling = NullValueHandling.Ignore)]
-		public DateTime? modified { get; set; }
+		private DateTime? _modified { get; set; }
 
+		
 		// This method identifies the ID field
 		public override string getID()
 		{
@@ -1689,12 +1770,19 @@ namespace LBXamarinSDK
 		[JsonProperty ("name", NullValueHandling = NullValueHandling.Ignore)]
 		public String name { get; set; }
 
+		[JsonIgnore]
+		public double age
+		{
+			get { return _age ?? new double(); }
+			set { _age = value; }
+		}
 		[JsonProperty ("age", NullValueHandling = NullValueHandling.Ignore)]
-		public double? age { get; set; }
+		private double? _age { get; set; }
 
 		[JsonProperty ("id", NullValueHandling = NullValueHandling.Ignore)]
 		public string id { get; set; }
 
+		
 		// This method identifies the ID field
 		public override string getID()
 		{
@@ -1706,15 +1794,28 @@ namespace LBXamarinSDK
 		[JsonProperty ("product", NullValueHandling = NullValueHandling.Ignore)]
 		public String product { get; set; }
 
+		[JsonIgnore]
+		public double star
+		{
+			get { return _star ?? new double(); }
+			set { _star = value; }
+		}
 		[JsonProperty ("star", NullValueHandling = NullValueHandling.Ignore)]
-		public double? star { get; set; }
+		private double? _star { get; set; }
 
 		[JsonProperty ("id", NullValueHandling = NullValueHandling.Ignore)]
 		public string id { get; set; }
 
+		[JsonIgnore]
+		public double authorId
+		{
+			get { return _authorId ?? new double(); }
+			set { _authorId = value; }
+		}
 		[JsonProperty ("authorId", NullValueHandling = NullValueHandling.Ignore)]
-		public double? authorId { get; set; }
+		private double? _authorId { get; set; }
 
+		
 		// This method identifies the ID field
 		public override string getID()
 		{
@@ -1726,15 +1827,28 @@ namespace LBXamarinSDK
 		[JsonProperty ("description", NullValueHandling = NullValueHandling.Ignore)]
 		public String description { get; set; }
 
+		[JsonIgnore]
+		public double total
+		{
+			get { return _total ?? new double(); }
+			set { _total = value; }
+		}
 		[JsonProperty ("total", NullValueHandling = NullValueHandling.Ignore)]
-		public double? total { get; set; }
+		private double? _total { get; set; }
 
 		[JsonProperty ("id", NullValueHandling = NullValueHandling.Ignore)]
 		public string id { get; set; }
 
+		[JsonIgnore]
+		public double customerId
+		{
+			get { return _customerId ?? new double(); }
+			set { _customerId = value; }
+		}
 		[JsonProperty ("customerId", NullValueHandling = NullValueHandling.Ignore)]
-		public double? customerId { get; set; }
+		private double? _customerId { get; set; }
 
+		
 		// This method identifies the ID field
 		public override string getID()
 		{
@@ -1742,10 +1856,7 @@ namespace LBXamarinSDK
 		}
 	}
 
-
 	// Relationship classes:
- // None.
-
-
+	// None.
 }
 // Eof

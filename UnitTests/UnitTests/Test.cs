@@ -782,7 +782,7 @@ namespace UnitTests
 				total = 6
 			};
 			string custId = CustList [3].getID();
-			Order createdOrder = Customers.createOrders(custId, newOrder).Result;
+			Order createdOrder = Customers.createOrders(newOrder, custId).Result;
 			Assert.AreNotEqual (null, createdOrder);
 			Assert.AreEqual (Convert.ToInt16(custId), createdOrder.customerId);
 			Assert.AreEqual (newOrder.description, createdOrder.description);
@@ -799,7 +799,7 @@ namespace UnitTests
 				star = 3
 			};
 			string custId = CustList [3].getID();
-			Review createdRev = Customers.createReviews (custId, newRev).Result;
+			Review createdRev = Customers.createReviews (newRev, custId).Result;
 			Assert.AreNotEqual (null, createdRev);
 			Assert.AreEqual (Convert.ToInt16(custId) , createdRev.authorId);
 			Assert.AreEqual (newRev.product, createdRev.product);
@@ -894,7 +894,7 @@ namespace UnitTests
 				description = "prodXX",
 				total = 13
 			};
-			Order createdOrder = Orders.createForCustomer(custForOuterRelations, newOrder).Result;
+			Order createdOrder = Orders.createForCustomer(newOrder, custForOuterRelations).Result;
 			Assert.AreEqual(Convert.ToInt16(custForOuterRelations), createdOrder.customerId); 
 			Assert.AreEqual(newOrder.description, createdOrder.description); 
 			Assert.AreEqual(newOrder.total, createdOrder.total); 
@@ -957,7 +957,7 @@ namespace UnitTests
 				product = "newProd",
 				star = 3
 			};
-			Review createdReview = Reviews.createForCustomer (custForOuterRelations, newReview).Result;
+			Review createdReview = Reviews.createForCustomer (newReview, custForOuterRelations).Result;
 			Assert.AreEqual (revs[2] + 1, Reviews.countForCustomer(custForOuterRelations).Result);
 			Assert.AreEqual (newReview.product, createdReview.product);
 			Assert.AreEqual (newReview.star, createdReview.star);
