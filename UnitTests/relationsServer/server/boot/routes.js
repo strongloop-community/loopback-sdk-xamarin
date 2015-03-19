@@ -4,6 +4,6 @@ module.exports = function(server) {
   //  res.render('index');
   //});
 
-  router.get('/', server.loopback.status());
+ router.get('/', server.loopback.status());
   server.use(router);
 };
