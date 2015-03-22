@@ -199,7 +199,7 @@ foreach (var model in modelsJSON.First.First)
 				var rawMethodData = JObject.Parse("{" + methodJsonToken + "}");
                 string methodName = rawMethodData.Properties().Select(p => p.Name).ToList()[0].ToString();
 
-				if (crudsList.Contains(methodName))
+				if (crudsList.Contains(methodName.ToLower()))
 				{
 					// Skip Crud methods, they're already included as inherited members from hardcoded CRUDInterface
 					parsedMethodNames.Add(methodName);
