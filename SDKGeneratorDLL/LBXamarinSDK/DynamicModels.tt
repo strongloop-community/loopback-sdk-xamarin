@@ -7,7 +7,7 @@
 <#@ import namespace="System.IO" #>
 <#@ assembly name="Microsoft.CSharp" #>
 <#@ import namespace="Microsoft.CSharp" #>
-<# /* Uncomment the following line when debugging */ #>
+<#/*Uncomment the following line when debugging */ #>
 <#/*@assembly name="C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/SDKGeneratorDLL/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
 <# /* ^^ */ #>
 <#@ import namespace="Newtonsoft.Json" #>
@@ -17,7 +17,6 @@
  *** Dynamic Models ***
  */
 <#
-
 // Uncomment the following line when debugging:
 //string jsonModel = File.ReadAllText("D:/debug.txt");
 // ^^
@@ -31,43 +30,46 @@ JObject modelsJSON = JObject.Parse(jsonModel);
 List<String> modelNames = modelsJSON.First.First.Select(x => (string)x.First).ToList();
 foreach (var model in modelsJSON.First.First)
 {
-	// Determine model name and inheritence, avoid self inheritence
+	// Determine model name
 	String modelName = model.First.First.ToString();
-	String inheritenceString = (String)model.ElementAt(2).First == "" || (String)model.ElementAt(2).First == "PersistedModel" ? "Model" : (String)model.ElementAt(2).First;
-	if(inheritenceString == modelName || !modelNames.Contains(inheritenceString))
-	{
-		inheritenceString = "Model";
-	}
+
+	// Determine inheritence of the model
+	string specifiedInheritence = (String)model.ElementAt(2).First;
+	string inheritenceString = (specifiedInheritence == "" ||
+								!modelNames.Contains(specifiedInheritence) || 
+								specifiedInheritence == modelName) 
+									? "LBModel" : specifiedInheritence;
+
+
+	// Write class declaration:
 #>
 	public partial class <#= modelName #> : <#= inheritenceString#>
 	{
 <#		
-		// Determine the ID field, gather information about the fields of the model
+		// Get data of the model's fields
+		var rawFieldsData = JObject.Parse(model.ElementAt(4).First.ToString());
+        List<string> fields = rawFieldsData.Properties().Select(p => p.Name).ToList();
+		List<string> fieldsTypes = rawFieldsData.PropertyValues().Select(p => p.First.First.ToString()).ToList();
+		List<bool> fieldIsArrayList = rawFieldsData.PropertyValues().Select(p => (bool)p.ElementAt(3).First).ToList();
+		List<string> fieldsNecessities = rawFieldsData.PropertyValues().ToList().Select(p => p.First.Next.First.ToString()).ToList();
+
+		// Determine the ID field of the model
 		String IDField = "";
-		JObject fieldsObj = JObject.Parse(model.ElementAt(4).First.ToString());
-        List<string> fields = fieldsObj.Properties().Select(p => p.Name).ToList();
-		List<bool> fieldIsArrayList = new List<bool>();
-        List<string> fieldsNecessities = new List<string>();
-        List<string> fieldsTypes = new List<string>();
+		const string idType = "string";
 		foreach (var fieldProperties in model.ElementAt(4).First)
-        {
-			fieldsNecessities.Add((String)fieldProperties.First.First.Next.First);
-			fieldsTypes.Add((String)fieldProperties.First.First.First);
-			fieldIsArrayList.Add((bool)fieldProperties.First.ElementAt(3).First);
 			if ((bool)fieldProperties.First.ElementAt(2).First)
             {
-				JObject tempObj = JObject.Parse("{" + fieldProperties.ToString() + "}");
-				IDField = (String)tempObj.Properties().Select(p => p.Name).First();
+				IDField = (String)(JObject.Parse("{" + fieldProperties.ToString() + "}")).Properties().Select(p => p.Name).First();
+				break;
 			}
-		}
-		string idType = "string";
 
-		// Add all fields, with Json tags
-        for (int i = 0; i < fields.Count; ++i)
+		// Add all fields to the class with Json serialization tags
+        for (int i = 0; i != fields.Count; ++i)
         {
 			string fieldAccessTag;
 			string fieldType;
 			string fieldName;
+
 			// Do we need a nullable interface for the field or not?
 			if(isPrimitiveType(jsTypeToCsType(fieldsTypes.ElementAt(i))) && !fieldIsArrayList.ElementAt(i) && fields.ElementAt(i) != IDField)
             {
@@ -83,7 +85,7 @@ foreach (var model in modelsJSON.First.First)
 		public <#=jsTypeToCsType(fieldsTypes.ElementAt(i))#> <#= createLegalVariable(fields.ElementAt(i)) #>
 		{
 			get { return <#=createNullableName(createLegalVariable(fields.ElementAt(i)))#> ?? new <#= jsTypeToCsType(fieldsTypes.ElementAt(i)) #>(); }
-			set { <#="_" + createLegalVariable(fields.ElementAt(i))#> = value; }
+			set { <#= createNullableName(createLegalVariable(fields.ElementAt(i)))#> = value; }
 		}
 <#
             }
@@ -98,13 +100,11 @@ foreach (var model in modelsJSON.First.First)
 			#>		[JsonProperty ("<#=fields.ElementAt(i)#>", NullValueHandling = NullValueHandling.Ignore)]
 		<#= fieldAccessTag #> <#=fields.ElementAt(i) == IDField ? idType : fieldType#><#if(fieldIsArrayList.ElementAt(i)){#>[]<#}#> <#=fieldName#> { get; set; }
 
-<#
-		
-		}#>		
+<#}#>		
 		// This method identifies the ID field
 		public override string getID()
 		{
-			return <# if((bool)model.ElementAt(3).First == true) {#>id<#}else{#><##><#=IDField#><#}#>;
+			return <# if((bool)model.ElementAt(3).First == true) /* idInjection = true */ {#>id<#}else{#><##><#=IDField#><#}#>;
 		}
 	}
 <#}#>
@@ -116,16 +116,16 @@ List<string> existentRelationshipResponses = new List<string>();
 foreach (var model in modelsJSON.First.First)
 {
 	foreach(var rel in model.ElementAt(6).First) {
-
 		if(rel != null && (string)rel.First.ElementAt(2).First == "hasAndBelongsToMany") {
 			string responseClassName = (string)model.First.First + (string)rel.First.ElementAt(1);
-			if(!existentRelationshipResponses.Contains(responseClassName)) {
+			if(!existentRelationshipResponses.Contains(responseClassName))
+			{
 				existentRelationshipResponses.Add(responseClassName);
 
 				string firstFieldName = decapitalize((string)model.First.First) + "Id";
 				string secondFieldName = decapitalize((string)rel.First.ElementAt(1)) + "Id";
 #>
-	public class <#= responseClassName #> : Model
+	public class <#= responseClassName #> : LBModel
 	{
 		[Newtonsoft.Json.JsonProperty("id")]
         public string id { get; set; }
@@ -138,8 +138,8 @@ foreach (var model in modelsJSON.First.First)
 	}
 
 <#
-            }
-        }
+			}
+		}
     }
 }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-console.log('SDK Generator.');
+console.log('>> SDK Generator.');
 
 var path = require('path');
 var semver = require('semver');
@@ -28,7 +28,7 @@ var apiUrl = argv['url'] || app.get('restApiRoot') || '/api';
 var result = generator.services(app, ngModuleName, apiUrl);
 console.error = silencerB;
 console.log = silencerA;
-console.log('Server parsed, templating code...');
+console.log('>> Server parsed, templating code...');
 var sdkCreationFunction = edge.func(__dirname + '/LBXamarinSDKGenerator.dll');
 var compileFlag = argv._[1];
 var dllOutputName = argv._[2];
@@ -36,9 +36,9 @@ var params = [result, dllOutputName, compileFlag, __dirname];
 
 if(sdkCreationFunction(params, true))
 {
-  console.log('Done.');
+  console.log('>> Done.');
 } else {
-  console.log('Done with errors.');
+  console.log('>> Done with errors.');
 };
 
 

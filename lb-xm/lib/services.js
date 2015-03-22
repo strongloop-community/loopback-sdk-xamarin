@@ -49,7 +49,6 @@ function describeModels(app) {
   var result = {};
   for(var model in app.models){
     model.get;
-
   }
   app.handler('rest').adapter.getClasses().forEach(function(c) {
     var name = c.name;
@@ -59,11 +58,6 @@ function describeModels(app) {
       console.error('Skipping %j as it is not a LoopBack model', name);
       return;
     }
-
-    // The URL of prototype methods include sharedCtor parameters like ":id"
-    // Because all $resource methods are static (non-prototype) in ngResource,
-    // the sharedCtor parameters should be added to the parameters
-    // of prototype methods.
     c.methods.forEach(function fixArgsOfPrototypeMethods(method) {
       var ctor = method.restClass.ctor;
       if (!ctor || method.sharedMethod.isStatic) return;

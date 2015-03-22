@@ -5,7 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using LBXamarinSDK;
 using Microsoft.CSharp;
-
+using System.IO;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 /**
  * Created at Perfected Tech, 2015
  * Perfectedtech.com
@@ -22,7 +24,7 @@ namespace LBXamarinSDKGenerator
         */
         public void WriteDefinitionsDebug(string jsonModel)
         {   
-            Console.WriteLine("Writing server Json definition to D:\\debug.txt");
+            Console.WriteLine(">> Writing server Json definition to D:\\debug.txt");
             System.IO.StreamWriter file = new System.IO.StreamWriter("D:\\debug.txt");
             file.Write(jsonModel);
             file.Close();
@@ -48,15 +50,15 @@ namespace LBXamarinSDKGenerator
             // Print messages 
             if (result.Errors.Count == 0)
             {
-                Console.WriteLine("Loopback Xamarin SDK DLL: " + outputPath + " compiled successfully.");
+                Console.WriteLine(">> Loopback Xamarin SDK DLL: " + outputPath + " compiled successfully.");
                 return true;
             }
             else
             {
-                Console.WriteLine("Loopback Xamarin SDK DLL Compilation errors:");
+                Console.WriteLine(">> Loopback Xamarin SDK DLL Compilation errors:");
                 foreach (var err in result.Errors)
                 {
-                    Console.WriteLine(err.ToString());
+                    Console.WriteLine(">> " + err.ToString());
                 }
                 return false;
             }
@@ -70,7 +72,7 @@ namespace LBXamarinSDKGenerator
         {
             // Get the DLL output path and json definition of the server
             string jsonModel = ((Object[]) input)[0].ToString();
-            //WriteDefinitionsDebug(jsonModel);
+            // WriteDefinitionsDebug(jsonModel);
 
             // Create new templates and pass the definition Json to DynamicModels and DynamicRepos
             var dynamicModelsTemplate = new DynamicModels();
@@ -101,13 +103,13 @@ namespace LBXamarinSDKGenerator
                 {
                     outputPath = ((Object[])input)[1].ToString();
                 }
-                Console.WriteLine("Compiling...");
+                Console.WriteLine(">> Compiling...");
                 string currentPath = ((Object[]) input)[3].ToString();
                 return await Compile(code, outputPath, currentPath);
             }
             else
             {
-                Console.WriteLine("Writing CS file: LBXamarinSDK.cs...");
+                Console.WriteLine(">> Writing CS file: LBXamarinSDK.cs...");
                 System.IO.StreamWriter file = new System.IO.StreamWriter("LBXamarinSDK.cs");
                 file.Write(code);
                 file.Close();
@@ -118,18 +120,19 @@ namespace LBXamarinSDKGenerator
 
 }
 
-/*
+
 // For debugging.
+/*
 namespace LBXamarinSDK
 {
     public class DebugProgram
     {
         private static void Main(string[] args)
         {
+
             Gateway.SetServerBaseURLToSelf();
-            Gateway.SetDebugMode(true);    
+            Gateway.SetDebugMode(true);
         }
     }
-}
+}*/
    
-*/

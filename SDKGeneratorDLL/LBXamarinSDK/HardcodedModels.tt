@@ -70,7 +70,7 @@ namespace LBXamarinSDK
 			if(debugMode)
 			{
 				Console.WriteLine("******************************");
-				Console.WriteLine("** SDK Gateway constructor. **");
+				Console.WriteLine("** SDK Gateway Debug Mode.  **");
 				Console.WriteLine("******************************\n");
 			}
 		}
@@ -266,7 +266,7 @@ namespace LBXamarinSDK
     }
 
 	// Base model for all LBXamarinSDK Models
-	public abstract class Model
+	public abstract class LBModel
     {
         public virtual String getID()
         {
@@ -276,7 +276,7 @@ namespace LBXamarinSDK
 
 	// Allow conversion between the return type of login methods into AccessToken, e.g. "AccessToken myAccessToken = await Users.login(someCredentials);
 	// TODO: Add this jobject->class implicit conversion as a templated function for all classes inheriting from model
-	public partial class AccessToken : Model
+	public partial class AccessToken : LBModel
     {
         public static implicit operator AccessToken(JObject jObj)
         {
@@ -294,7 +294,7 @@ namespace LBXamarinSDK
 	if(!modelNames.Contains("AccessToken")) {
 #>
 	// Access Token model
-	public partial class AccessToken : Model
+	public partial class AccessToken : LBModel
     {
         [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
         public string id { get; set; }
@@ -330,7 +330,7 @@ namespace LBXamarinSDK
     }
 #>
 	// GeoPoint primitive loopback type
-	public class GeoPoint : Model
+	public class GeoPoint : LBModel
 	{
 		// Must be leq than 90: TODO: Add attributes or setter limitations
 		[JsonProperty("lat", NullValueHandling = NullValueHandling.Ignore)]

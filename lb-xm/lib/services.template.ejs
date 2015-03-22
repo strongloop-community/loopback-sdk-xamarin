@@ -38,6 +38,7 @@
 <%  for(var acc in meta.methods[action].accepts) { -%>
 <% if(typeof(meta.methods[action].accepts[acc].http) === "function") continue -%>
 <% var paramPlacement = "query" -%>
+<% if(meta.methods[action].getFullPath().indexOf(":" + meta.methods[action].accepts[acc].arg) >= 0) paramPlacement = "path" -%>
 <% if(typeof(meta.methods[action].accepts[acc].http) != "undefined") paramPlacement = meta.methods[action].accepts[acc].http.source -%>
              '<%- meta.methods[action].accepts[acc].arg %>' : {'type' : '<%-: meta.methods[action].accepts[acc].type %>', 'placement' : '<%-: paramPlacement %>'}<% if(!(meta.methods[action].accepts[acc] === meta.methods[action].accepts[Object.keys(meta.methods[action].accepts)[Object.keys(meta.methods[action].accepts).length-1]])){ %>,<% } %>
 <% }; -%>
@@ -47,7 +48,8 @@
           '<%- meta.methods[action].returns[ret].arg %>' : '<%-: meta.methods[action].returns[ret].type %>'<% if(!(meta.methods[action].returns[ret] === meta.methods[action].returns[Object.keys(meta.methods[action].returns)[Object.keys(meta.methods[action].returns).length-1]])){ %>,<% } %>,
            'isArray': <% if (meta.methods[action].isReturningArray()) { %>true<%}else {%>false<% } %>
 <% }; -%>
-          }
+          },
+          'description': '<%- meta.methods[action].description %>'
        }<% if(!(meta.methods[action] === meta.methods[Object.keys(meta.methods)[Object.keys(meta.methods).length-1]])){ %>,<% } %>
 <%  };  %>
     }
