@@ -75,6 +75,7 @@ foreach (var model in modelsJSON.First.First)
 #>
 			};
 
+			// Getter for API paths of CRUD methods
 			protected static String getAPIPath(String crudMethodName)
             {
 				Type baseType = typeof(T);
@@ -89,7 +90,11 @@ foreach (var model in modelsJSON.First.First)
 				return APIDictionary[dictionaryKey];
             }
 
-            // All the basic CRUD: Hardcoded
+            /* All the basic CRUD: Hardcoded */
+
+			/*
+			 * Create a new instance of the model and persist it into the data source
+			 */
             public static async Task<T> Create(T theModel)
             {
                 String APIPath = getAPIPath("Create");
@@ -97,6 +102,9 @@ foreach (var model in modelsJSON.First.First)
                 return response;
             }
 
+			/*
+			 * Update an existing model instance or insert a new one into the data source
+			 */
             public static async Task<T> Upsert(T theModel)
             {
                 String APIPath = getAPIPath("Upsert");
@@ -104,17 +112,20 @@ foreach (var model in modelsJSON.First.First)
                 return response;
             }
 
+			/*
+			 * Check whether a model instance exists in the data source
+			 */
             public static async Task<bool> Exists(string ID)
             {
                 String APIPath = getAPIPath("Exists");
                 APIPath = APIPath.Replace(":id", ID);
                 var response = await Gateway.PerformGetRequest<ExistenceResponse>(APIPath).ConfigureAwait(false);
-                if (response != null)
-                    return response.exists;
-                else
-                    return false;
+                return response.exists;
             }
 
+			/*
+			 * Find a model instance by id from the data source
+			 */
             public static async Task<T> FindById(String ID)
             {
                 String APIPath = getAPIPath("FindById");
@@ -123,18 +134,21 @@ foreach (var model in modelsJSON.First.First)
                 return response;
             }
 
+			/*
+			 * Find all instances of the model matched by filter from the data source
+			 */
             public static async Task<IList<T>> Find(string filter = "")
             {
                 String APIPath = getAPIPath("Find");
                 IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				queryStrings.Add("filter", filter);
                 var response = await Gateway.PerformGetRequest<T[]>(APIPath, queryStrings).ConfigureAwait(false);
-                if (response != null)
-                    return response.ToList();
-                else
-                    return default(IList<T>);
+                return response.ToList();
             }
 
+			/*
+			 * Find first instance of the model matched by filter from the data source
+			 */
             public static async Task<T> FindOne(string filter = "")
             {
                 String APIPath = getAPIPath("FindOne");
@@ -144,6 +158,9 @@ foreach (var model in modelsJSON.First.First)
                 return response;
             }
 
+			/*
+			 * Update instances of the model matched by where from the data source
+			 */
             public static async Task UpdateAll(T updateModel, string whereFilter)
             {
 				String APIPath = getAPIPath("UpdateAll");
@@ -152,6 +169,9 @@ foreach (var model in modelsJSON.First.First)
                 var response = await Gateway.PerformPostRequest<T, string>(updateModel, APIPath, queryStrings).ConfigureAwait(false);
             }
 
+			/*
+			 * Delete a model instance by id from the data source
+			 */
             public static async Task DeleteById(String ID)
             {
 				String APIPath = getAPIPath("DeleteById");
@@ -159,18 +179,21 @@ foreach (var model in modelsJSON.First.First)
                 var response = await Gateway.PerformRequest<string>(APIPath, "", "DELETE").ConfigureAwait(false);
             }
 
+			/*
+			 * Count instances of the model matched by where from the data source
+			 */
             public static async Task<int> Count(string whereFilter = "")
             {
                 String APIPath = getAPIPath("Count");
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				queryStrings.Add("where", whereFilter);
                 var response = await Gateway.PerformGetRequest<CountResponse>(APIPath, queryStrings).ConfigureAwait(false);
-                if (response != null)
-                    return response.count;
-                else
-                    return -1;
+                return response.count;
             }
 
+			/*
+			 * Update attributes for a model instance and persist it into the data source
+			 */
             public static async Task<T> UpdateById(String ID, T update)
             {
                 String APIPath = getAPIPath("prototype$updateAttributes");
@@ -202,7 +225,7 @@ foreach (var model in modelsJSON.First.First)
 				if (crudsList.Contains(methodName.ToLower()))
 				{
 					// Skip Crud methods, they're already included as inherited members from hardcoded CRUDInterface
-					parsedMethodNames.Add(methodName);
+					parsedMethodNames.Add(methodName.ToLower());
 					continue;
 				}
 
@@ -285,7 +308,7 @@ foreach (var model in modelsJSON.First.First)
 			if(isPrimitive(returnTypeOrig) && !returnTypeIsArray)
             {
 				templatesString = "object";
-				returnStatementString = "return response != null ? JObject.Parse(response.ToString()).First.First.ToObject<" + returnTypeOrig + ">() : default("+ returnTypeOrig +");";
+				returnStatementString = "return JObject.Parse(response.ToString()).First.First.ToObject<" + returnTypeOrig + ">();";
             }
 			else if (returnTypeOrig == "void")
             {

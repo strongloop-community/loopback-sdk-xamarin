@@ -3,9 +3,9 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using LBXamarinSDK;
 using Microsoft.CSharp;
 using System.IO;
+using LBXamarinSDK;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 /**
@@ -134,5 +134,5 @@ namespace LBXamarinSDK
             Gateway.SetDebugMode(true);
         }
     }
-}*/
-   
+}
+*/

@@ -37,6 +37,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 
 namespace LBXamarinSDK
 {
@@ -59,15 +60,15 @@ namespace LBXamarinSDK
 		
 		private static RestClient _client = new RestClient {BaseUrl = BASE_URL};
         private static string _accessToken = null;
-		private static bool debugMode = false;
-        private static CancellationTokenSource cts = new CancellationTokenSource();
-		private static int timeout = 6000;
+		private static bool _debugMode = false;
+        private static CancellationTokenSource _cts = new CancellationTokenSource();
+		private static int _timeout = 6000;
 
 		// Allow Console WriteLines to debug communication with server
 		public static void SetDebugMode(bool isDebugMode)
 		{
-			debugMode = isDebugMode;
-			if(debugMode)
+			_debugMode = isDebugMode;
+			if(_debugMode)
 			{
 				Console.WriteLine("******************************");
 				Console.WriteLine("** SDK Gateway Debug Mode.  **");
@@ -78,19 +79,19 @@ namespace LBXamarinSDK
 		// Debug mode getter
 		public static bool GetDebugMode()
 		{
-			return debugMode;
+			return _debugMode;
 		}
 		
 		/*** Cancellation-Token methods, define a timeout for a server request ***/
 		private static void ResetCancellationToken()
 		{
-			cts = new CancellationTokenSource();
-            cts.CancelAfter(timeout);
+			_cts = new CancellationTokenSource();
+            _cts.CancelAfter(_timeout);
 		}
 
         public static void SetTimeout(int timeoutMilliseconds = 6000)
         {
-			timeout = timeoutMilliseconds;
+			_timeout = timeoutMilliseconds;
 			ResetCancellationToken();
         }
 		/* *** */
@@ -109,14 +110,13 @@ namespace LBXamarinSDK
             if (firstOrDefault != null)
             { 
                 string adrStr = "http://" + firstOrDefault.ToString() + ":3000/api/";
-				if (debugMode)
+				if (_debugMode)
                     Console.WriteLine("-------- >> DEBUG: Setting Gateway URL to " + adrStr);	
                 SetServerBaseURL(new Uri(adrStr));
-				
             }
 			else
 			{
-				if (debugMode)
+				if (_debugMode)
                     Console.WriteLine("-------- >> DEBUG: Error finding self URL.");
 				throw new Exception();
 			}
@@ -129,15 +129,21 @@ namespace LBXamarinSDK
                 _accessToken = accessToken.id;
         }
 
+		// Get the access token ID currently being used by the gateway
+		public static string GetAccessTokenId()
+        {
+            return _accessToken;
+        }
+
 		// Performs a request to determine if connected to server
         public static async Task<bool> isConnected(int timeoutMilliseconds = 6000)
 		{
 			SetTimeout(timeoutMilliseconds);
-			cts.Token.ThrowIfCancellationRequested();
+			_cts.Token.ThrowIfCancellationRequested();
 			try
 			{
 				var request = new RestRequest ("/", new HttpMethod ("GET"));
-				var response = await _client.Execute<JObject>(request, cts.Token).ConfigureAwait(false);
+				var response = await _client.Execute<JObject>(request, _cts.Token).ConfigureAwait(false);
 				if (response != null)
 				{
 					return true;
@@ -149,7 +155,7 @@ namespace LBXamarinSDK
 			}
 			catch(Exception e)
 			{
-				if (debugMode)
+				if (_debugMode)
                     Console.WriteLine("-------- >> DEBUG: Error: " + e.Message + " >>");	 
 				return false;
 			}
@@ -165,32 +171,17 @@ namespace LBXamarinSDK
 		public static async Task<T> MakeRequest<T>(RestRequest request)
 		{
             ResetCancellationToken();
-			cts.Token.ThrowIfCancellationRequested();
+			_cts.Token.ThrowIfCancellationRequested();
 
-		    try
-		    {
-                var response = await _client.Execute<T>(request, cts.Token).ConfigureAwait(false);
-		        return response.Data;
-		    }
-		    catch (OperationCanceledException e)
-		    {
-                if (debugMode)
-                    Console.WriteLine("-------- >> DEBUG: Timeout, no response from server: " + e.Message + " >>");	 
-		    }
-		    catch (Exception e)
-		    {
-				if(debugMode)
-					Console.WriteLine("-------- >> DEBUG: Error performing request: " + e.Message + " >>");	     
-		    }
-
-            return default(T);
+			var response = await _client.Execute<T>(request, _cts.Token).ConfigureAwait(false);
+		    return response.Data;
 		}
 
 
 		// Parses a server request then makes it through MakeRequest
         public static async Task<T> PerformRequest<T>(string APIUrl, string json, string method = "POST", IDictionary<string, string> queryStrings = null)
 		{
-			if(debugMode)
+			if(_debugMode)
 				Console.WriteLine("-------- >> DEBUG: Performing " + method + " request, Json: " + (string.IsNullOrEmpty(json) ? "EMPTY" : json));
 
 		    RestRequest request = null;
@@ -236,9 +227,9 @@ namespace LBXamarinSDK
 			}
             catch(Exception e)
 			{
-                if (debugMode)
-                    Console.WriteLine("-------- >> DEBUG: Error performing request: " + e.Message + " >>");	     
-				return default(T);
+                if (_debugMode)
+                    Console.WriteLine("-------- >> DEBUG: Error performing request: " + e.Message + " >>");
+				throw new RestException(e.Message);
 			}     
             
 		}
@@ -334,21 +325,34 @@ namespace LBXamarinSDK
 	{
 		// Must be leq than 90: TODO: Add attributes or setter limitations
 		[JsonProperty("lat", NullValueHandling = NullValueHandling.Ignore)]
-		public double? _Latitude { get; set; }
-		[JsonIgnore]
-		public double Latitude
-		{
-			get { return _Latitude ?? new double(); }
-			set { _Latitude = value; }
-		}
+		public double Latitude { get; set; }
 
 		[JsonProperty("lng", NullValueHandling = NullValueHandling.Ignore)]
-		public double? _Longtitude { get; set; }
-		[JsonIgnore]
-		public double Longtitude
-		{
-			get { return _Longtitude ?? new double(); }
-			set { _Longtitude = value; }
-		}
+		public double Longitude { get; set; }
 	}
+
+	// Exception class, thrown on bad REST requests
+	class RestException : Exception
+    {
+		public int StatusCode { get; private set; }
+
+		private static int parseStatusCode(string responseString)
+		{
+            Regex parseRegex = new Regex(@"\:\ [0-9]{3}\ \(");
+            if (parseRegex.IsMatch(responseString))
+            {
+                Match match = Regex.Match(responseString, @"\:\ ([0-9]{3})\ \(");
+				StatusCode = Int32.Parse(match.Groups[1].Value);
+			}
+			else
+			{
+				StatusCode = 0;
+			}
+		}
+
+		public RestException(string responseString) : base(responseString)
+		{
+			StatusCode = parseStatusCode(responseString);
+		}
+    }
 }
