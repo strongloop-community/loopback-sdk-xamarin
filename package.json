@@ -1,0 +1,19 @@
+{
+  "name": "loopback-sdk-xm",
+  "version": "1.1.4",
+  "description": "Tool to create a C# SDK for a Loopback server",
+  "bin": {
+    "lb-xm": "bin/lb-xm"
+  },
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "dependencies": {
+	"node-gyp": "^1.0.3",
+    "edge": "^0.9.3",
+    "ejs": "^1.0.0",
+    "express": "3.x",
+    "optimist": "^0.6.1",
+    "semver": "^2.2.1"
+  }
+}

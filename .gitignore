@@ -1,17 +1,16 @@
 *.txt
 
-lb-xm/node_modules/
-lb-xm/.idea/
-lb-xm/npm-debug.log
+node_modules/
+.idea/
 
-SDKGeneratorDLL/LBXamarinSDK/DynamicModels.cs
-SDKGeneratorDLL/LBXamarinSDK/DynamicRepos.cs
-SDKGeneratorDLL/LBXamarinSDK/HardcodedModels.cs
-SDKGeneratorDLL/LBXamarinSDK/bin/
-SDKGeneratorDLL/LBXamarinSDK/obj/
-SDKGeneratorDLL/packages/
-
-UnitTests/packages/
-UnitTests/UnitTests/bin/
-UnitTests/UnitTests/obj/
-UnitTests/relationsServer/node_modules/
+C#/LBXamarinSDK/DynamicModels.cs
+C#/LBXamarinSDK/DynamicRepos.cs
+C#/LBXamarinSDK/HardcodedModels.cs
+C#/LBXamarinSDK/bin/
+C#/LBXamarinSDK/obj/
+C#/LBXamarinSDK/packages/
+packages/
+C#/packages/
+C#/lb-xmTesters/bin/
+C#/lb-xmTesters/obj/
+test-server/node_modules/
