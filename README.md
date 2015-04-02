@@ -51,6 +51,12 @@ Creation of Loopback SDK for Xamarin Studio or C# project.
         -Calibrated to work with the test server, using classes which are in a LBXamarinSDK.cs file, created specifically for that server 
         -Changing the server without compiling a new LBXamatinSDK.cs will probably cause it not to work, or give false results
 
+* Naming Conventions of solution files
+
+        -Some of the test need to run on a specific order. NUnit runs test automatically, so "a_" and "b_" are used at the beginning of
+          tests to keep the needed order
+        -The order is required because of changes that are done to the server db by some tests, and may affect other tests, if run in a wrong order.
+
 ### How do I get set up? ###
 
 ** Setup**
@@ -80,8 +86,8 @@ Creation of Loopback SDK for Xamarin Studio or C# project.
 
         1. Go into test-server and run 'slc run' (close the server if it had run, and run it again)
         !Important! This part should be done each time you run a test, as test change data in the server.
-        2. If you made changes to the relationsServer
-        -Comlpile a new LBXamatinSDK.cs and replace the existing one
+        2. If you made changes to the test-server
+        -Comlpile a new LBXamatinSDK.cs and replace the existing one (node lb-xm SERVERPATH)
         -Make sure that the code corresponds to changes on expected test results
 
 * Visual Studio 
@@ -96,3 +102,12 @@ Creation of Loopback SDK for Xamarin Studio or C# project.
 
         1. open LBXamarinSDK.sln
         2. right click "lb-xmTesters" in the solution explorer -> run unit
+
+
+### Contribution Workflow to the SDK Generator ###
+
+* Write a failing test in lb-xmTest of the desired feature.
+* Make changes to the SDK Generator C# project or/and test server or/and JS Code.
+* Build the SDKGenerator C# project 
+* Run the lb-xm to create a CS file and put it into the Testers project
+* Run Test - Check feature functionality
