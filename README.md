@@ -51,11 +51,6 @@ Creation of Loopback SDK for Xamarin Studio or C# project.
         -Calibrated to work with the test server, using classes which are in a LBXamarinSDK.cs file, created specifically for that server 
         -Changing the server without compiling a new LBXamatinSDK.cs will probably cause it not to work, or give false results
 
-* Naming Conventions of solution files
-
-        -Some of the test need to run on a specific order. NUnit runs test automatically, so "a_" and "b_" are used at the beginning of
-          tests to keep the needed order
-        -The order is required because of changes that are done to the server db by some tests, and may affect other tests, if run in a wrong order.
 
 ### How do I get set up? ###
 
