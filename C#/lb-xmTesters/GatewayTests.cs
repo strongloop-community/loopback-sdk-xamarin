@@ -15,7 +15,7 @@ namespace UnitTests
 		//Login
 		[Test]
 		public void login(){
-			MiniUser credentials = new MiniUser () {
+			var credentials = new MiniUser {
 				email = "admin@g.com",
 				password = "1234"
 			};
@@ -37,7 +37,7 @@ namespace UnitTests
 		//isConnected
 		[Test]
 		public void isConnected(){
-			Gateway.SetServerBaseURL (new Uri("http://asd.com"));
+			Gateway.SetServerBaseURL (new Uri("http://1.1.1.1:3000"));
 			Assert.AreEqual (false, Gateway.isConnected ().Result);
 			Gateway.SetServerBaseURLToSelf ();
 			Gateway.SetDebugMode (true);

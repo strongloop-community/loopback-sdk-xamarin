@@ -310,10 +310,12 @@ namespace LBXamarinSDK
 
 		private static int parseStatusCode(string responseString)
 		{
-            Regex parseRegex = new Regex(@"\:\ [0-9]{3}\ \(");
+            //Regex parseRegex = new Regex(@"\:\ [0-9]{3}\ \(");
+			Regex parseRegex = new Regex(@"[0-9]{3}");
             if (parseRegex.IsMatch(responseString))
             {
-                Match match = Regex.Match(responseString, @"\:\ ([0-9]{3})\ \(");
+                //Match match = Regex.Match(responseString, @"\:\ ([0-9]{3})\ \(");
+				Match match = Regex.Match(responseString, @"([0-9]{3})");
 				return Int32.Parse(match.Groups[1].Value);
 			}
 			else

@@ -7,20 +7,20 @@ using System;
 namespace UnitTests
 {
 	/*
-	 * c_TestMiniUserCRUDAsUser class
+	 * TestMiniUserCRUDAsUser class
 	 * 
 	 * Tests the server for miniUser CRUD functions as a regular user
 	 * Follows a predefined server state
 	 * Run with a new server instance, otherwise ambigous results will occure
 	 */
 	[TestFixture]
-	public class c_TestMiniUserCRUDAsUser{
+	public class TestMiniUserCRUDAsUser{
 		#region functions
 		/*	performLoginAsAdmin
 		 * performs login as server admin
 		 */
 		public void performLoginAsAdmin(){
-			MiniUser credentials = new MiniUser () {
+			var credentials = new MiniUser {
 				email = "admin@g.com",
 				password = "1234"
 			};
@@ -33,7 +33,7 @@ namespace UnitTests
 		 */
 
 		public void performLogin(){
-			MiniUser credentials = new MiniUser () {
+			var credentials = new MiniUser {
 				email = "admin1@g.com",
 				password = "1234"
 			};
@@ -42,6 +42,7 @@ namespace UnitTests
 			Gateway.SetAccessToken (a);
 		}
 		#endregion
+
 		#region testfixture setup/teardow
 		[TestFixtureSetUp]
 		public void setup(){
@@ -54,10 +55,11 @@ namespace UnitTests
 			MiniUsers.logout ().Wait();
 		}
 		#endregion
+
 		#region CRUD tests
 		//Count
 		[Test]
-		public void a10_count(){
+		public void count(){
             try
             {
                 int result = MiniUsers.Count().Result;
@@ -65,15 +67,15 @@ namespace UnitTests
             }
             catch (AggregateException e)
             {
-                RestException restException = (RestException)e.InnerException;
+                var restException = (RestException)e.InnerException;
                 Assert.AreEqual(401, restException.StatusCode);
             }
 		}
 
 		//Create
 		[Test]
-		public void a11_create(){
-			MiniUser newMiniUser = new MiniUser () {
+		public void create(){
+			var newMiniUser = new MiniUser {
 				email = "newMiniUser1@g.com",
 				password = "1234"
 			};
@@ -87,7 +89,7 @@ namespace UnitTests
             }
             catch (AggregateException e)
             {
-                RestException restException = (RestException)e.InnerException;
+                var restException = (RestException)e.InnerException;
                 Assert.AreEqual(422, restException.StatusCode);
             }
 			performLoginAsAdmin ();
@@ -97,7 +99,7 @@ namespace UnitTests
 
 		//findById
 		[Test]
-		public void a12_findById(){
+		public void findById(){
 			MiniUser usr = MiniUsers.FindById ("2").Result;
 			Assert.AreNotEqual (null, usr);
 			Assert.AreEqual ("admin1@g.com", usr.email);
@@ -109,7 +111,7 @@ namespace UnitTests
             }
             catch (AggregateException e)
             {
-                RestException restException = (RestException)e.InnerException;
+                var restException = (RestException)e.InnerException;
                 Assert.AreEqual(401, restException.StatusCode);
             }
 
@@ -117,7 +119,7 @@ namespace UnitTests
 
 		//Find
 		[Test]
-		public void a13_find(){
+		public void find(){
             try
             {
                 IList<MiniUser> usrList = MiniUsers.Find().Result;
@@ -125,14 +127,14 @@ namespace UnitTests
             }
             catch (AggregateException e)
             {
-                RestException restException = (RestException)e.InnerException;
+                var restException = (RestException)e.InnerException;
                 Assert.AreEqual(401, restException.StatusCode);
             }
 		}
 
 		//Exists
 		[Test]
-		public void a14_exists(){
+		public void exists(){
             try
             {
                 bool result = MiniUsers.Exists("1").Result;
@@ -140,7 +142,7 @@ namespace UnitTests
             }
             catch (AggregateException e)
             {
-                RestException restException = (RestException)e.InnerException;
+                var restException = (RestException)e.InnerException;
                 Assert.AreEqual(401, restException.StatusCode);
             }
             try
@@ -150,14 +152,14 @@ namespace UnitTests
             }
             catch (AggregateException e)
             {
-                RestException restException = (RestException)e.InnerException;
+                var restException = (RestException)e.InnerException;
                 Assert.AreEqual(401, restException.StatusCode);
             }
 		}
 
 		//FindOne
 		[Test]
-		public void a15_findOne(){
+		public void findOne(){
             try
             {
                 MiniUser result = MiniUsers.FindOne().Result;
@@ -165,15 +167,15 @@ namespace UnitTests
             }
             catch (AggregateException e)
             {
-                RestException restException = (RestException)e.InnerException;
+                var restException = (RestException)e.InnerException;
                 Assert.AreEqual(401, restException.StatusCode);
             }
 		}
 
 		//update all
 		[Test]
-		public void a16_updateAll(){
-			MiniUser upUsr = new MiniUser () {
+		public void updateAll(){
+			var upUsr = new MiniUser {
 				email = "update@g.com"
 			};
             try
@@ -183,18 +185,20 @@ namespace UnitTests
             }
             catch (AggregateException e)
             {
-                RestException restException = (RestException)e.InnerException;
+                var restException = (RestException)e.InnerException;
                 Assert.AreEqual(401, restException.StatusCode);
             }
 		}
 
 		//updateById
 		[Test]
-		public void a17_updateById(){
-			MiniUser upUsr = new MiniUser () {
+		public void updateById(){
+			var upUsr = new MiniUser {
 				email = "update@g.com"
 			};
+			//update self
             MiniUsers.UpdateById("2", upUsr).Wait();
+			//trying to update other
             try
             {
                 MiniUsers.UpdateById("3", upUsr).Wait();
@@ -202,31 +206,31 @@ namespace UnitTests
             }
             catch (AggregateException e)
             {
-                RestException restException = (RestException)e.InnerException;
+                var restException = (RestException)e.InnerException;
                 Assert.AreEqual(401, restException.StatusCode);
             }
 			MiniUser upRes = MiniUsers.FindById ("2").Result;
 			Assert.AreEqual (upUsr.email, upRes.email);
 
-
+			//perform update checks using admin login
 			performLoginAsAdmin ();
 
 			upRes = MiniUsers.FindById ("3").Result;
 			Assert.AreNotEqual (upUsr.email, upRes.email);
 
-			upUsr = new MiniUser () {
+			upUsr = new MiniUser {
 				email = "admin1@g.com"
 			};
 
+			//update back to original state
 			MiniUsers.UpdateById ("2", upUsr).Wait();
-
 			performLogin ();
 
 		}
 
 		//deleteById
 		[Test]
-		public void a18_deleteById(){
+		public void deleteById(){
             try
             {
                 MiniUsers.DeleteById("3").Wait();
@@ -234,7 +238,7 @@ namespace UnitTests
             }
             catch (AggregateException e)
             {
-                RestException restException = (RestException)e.InnerException;
+                var restException = (RestException)e.InnerException;
                 Assert.AreEqual(401, restException.StatusCode);
             }
 		}

@@ -6,19 +6,20 @@ using System;
 namespace UnitTests
 {
 	/*
-	 * b_TestMiniUserCRUDAsAdmin class
+	 * TestMiniUserCRUDAsAdmin class
 	 * 
 	 * Tests the server for miniUser CRUD functions as an admin
 	 * Follows a predefined server state
 	 * Run with a new server instance, otherwise ambigous results will occure
 	 */
 	[TestFixture]
-	public class b_TestMiniUserCRUDAsAdmin{
+	public class TestMiniUserCRUDAsAdmin{
+		#region functions
 		/*	perfomLogin
 		 * preforms login as admin
 		 */
 		public void performLogin(){
-			MiniUser credentials = new MiniUser () {
+			var credentials = new MiniUser {
 				email = "admin@g.com",
 				password = "1234"
 			};
@@ -26,6 +27,8 @@ namespace UnitTests
 		
 			Gateway.SetAccessToken (accessToken);
 		}
+		#endregion
+
 		#region testfixture setup/teardown
 		[TestFixtureSetUp]
 		public void setup(){
@@ -42,26 +45,28 @@ namespace UnitTests
 		#region CRUD test
 		//Count
 		[Test]
-		public void a10_count(){
+		public void count(){
 			Assert.AreEqual (3, MiniUsers.Count ().Result);
 		}
 
 		//FindById
 		[Test]
-		public void a11_findById(){
-			MiniUser usr = MiniUsers.FindById ("1").Result;
+		public void findById(){
+			var usr = new MiniUser {
+				email = "newMiniUser25@g.com",
+				password = "1234"
+			};
+			usr = MiniUsers.Create (usr).Result;
+			usr = MiniUsers.FindById (usr.id).Result;
 			Assert.AreNotEqual (null, usr);
-			Assert.AreEqual ("admin@g.com", usr.email);
-			usr = MiniUsers.FindById ("2").Result;
-			Assert.AreNotEqual (null, usr);
-			Assert.AreEqual ("admin1@g.com", usr.email);
-
+			Assert.AreEqual ("newMiniUser25@g.com", usr.email);
+			MiniUsers.DeleteById (usr.id).Wait();
 		}
 
 		//Create and Delete
 		[Test]
-		public void a12_createDelete(){
-			MiniUser newMiniUser = new MiniUser () {
+		public void createDelete(){
+			var newMiniUser = new MiniUser {
 				email = "newMiniUser2@g.com",
 				password = "1234"
 			};
@@ -76,7 +81,7 @@ namespace UnitTests
             }
             catch (AggregateException e)
             {
-                RestException restException = (RestException)e.InnerException;
+                var restException = (RestException)e.InnerException;
                 Assert.AreEqual(422, restException.StatusCode);
             }
             MiniUsers.DeleteById(id).Wait();
@@ -87,7 +92,7 @@ namespace UnitTests
             }
             catch (AggregateException e)
             {
-                RestException restException = (RestException)e.InnerException;
+                var restException = (RestException)e.InnerException;
                 Assert.AreEqual(404, restException.StatusCode);
             }
 		}
@@ -106,14 +111,14 @@ namespace UnitTests
 
 		//Exists
 		[Test]
-		public void a14_exists(){
+		public void exists(){
 			Assert.AreEqual(true, MiniUsers.Exists("1").Result);
 			Assert.AreEqual(false, MiniUsers.Exists("10").Result);
 		}
 
 		//FindOne
 		[Test]
-		public void a15_findOne(){
+		public void findOne(){
 			MiniUser usr = MiniUsers.FindOne ().Result;
 			Assert.AreNotEqual(null, usr);
 			Assert.AreEqual ("1", usr.getID());
@@ -126,21 +131,43 @@ namespace UnitTests
 		}
 		//updateAllById
 		[Test]
-		public void a16_updateAll_ById(){
-			MiniUser upUsr = new MiniUser () {
+		public void updateAll_ById(){
+			var upUsr = new MiniUser {
 				email = "updateAll@g.com"
 			};
-			MiniUsers.UpdateAll(upUsr, "{\"id\" : \"3\"}").Wait();
-			MiniUser upRes = MiniUsers.FindById ("3").Result;
-			Assert.AreEqual (upUsr.email, upRes.email);
+			var newIds = new List<string> ();
+			string filter = "{\"or\": [";
+			for (int i = 0; i < 4; i++) {
+				var newMiniUser = new MiniUser {
+					email = "newMiniUserA" + i + "@g.com",
+					password = "1234"
+				};
+				newMiniUser = MiniUsers.Create (newMiniUser).Result;
+				newIds.Add (newMiniUser.id);
+				filter = filter + "{\"id\": \"" + newMiniUser.id + "\"}";
+				if (i < 3) {
+					filter = filter + " ,";
+				}
+			}
+			filter = filter + "]}";
 
-			MiniUser upUsr3 = new MiniUser () {
-				email = "admin2@g.com"
+			MiniUsers.UpdateAll(upUsr, filter).Wait();
+			MiniUser upRes;
+			foreach (string id in newIds) {
+				upRes = MiniUsers.FindById (id).Result;
+				Assert.AreEqual (upUsr.email, upRes.email);
+			}
+
+			upUsr = new MiniUser {
+				email = "admin31@g.com"
 			};
-			MiniUsers.UpdateById ("3", upUsr3).Wait();
+			MiniUsers.UpdateById (newIds[0], upUsr).Wait();
 
-			upRes = MiniUsers.FindById ("3").Result;
-			Assert.AreEqual (upUsr3.email, upRes.email);
+			upRes = MiniUsers.FindById (newIds[0]).Result;
+			Assert.AreEqual (upUsr.email, upRes.email);
+			foreach (string id in newIds) {
+				MiniUsers.DeleteById (id);
+			}
 		}
 		#endregion
 	}
