@@ -7,14 +7,14 @@
 <#@ import namespace="System.Text.RegularExpressions" #>
 <#@ import namespace="System.IO" #>
 <# /* Uncomment the following line when debugging */ #>
-<#/*@assembly name="C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/SDKGeneratorDLL/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
+<#/*@assembly name="C:/Users/PerfectedTech/Documents/lbxamarinsdk-generator/C#/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
 <# /* ^^ */ #>
 <#@ import namespace="Newtonsoft.Json" #>
 <#@ import namespace="Newtonsoft.Json.Linq" #>
 <#@ parameter name="jsonModel" type="System.String" #>
 <#
 // Uncomment the following line when debugging:
-// string jsonModel = File.ReadAllText("D:/debug.txt");
+//string jsonModel = File.ReadAllText("D:/debug.txt");
 // ^^
 JObject modelsJSON = JObject.Parse(jsonModel);
 #>
@@ -271,12 +271,24 @@ foreach (var model in modelsJSON.First.First)
 <#				// Write the addition into the request of the specific parameter, according to its 
 				for(int i = 0; i < paramsNames.Count; ++i)
                 {
+					if(paramsPlacements.ElementAt(i) == "body") 
+					{ 
+						string serializationTarget =  paramsNames[i];
+						if(isCSPrimitive(determineParamType(paramsTypes.ElementAt(i), 
+										 paramsPlacements.ElementAt(i), 
+										 model.First.First.ToString())))
+                        {
+							// If the parameter is Body type and also a primitive type, it needs to be encapsulated before serialized,
+							// corresponding to a Json structure
+							serializationTarget = "new { " + paramsNames[i] + " = " + paramsNames[i] + " }"; 
+                        }
+					#>				bodyJSON = JsonConvert.SerializeObject(<#=serializationTarget#>);
+<# }
 					if(paramsPlacements.ElementAt(i) == "query") { #>				queryStrings.Add("<#=paramsNames[i]#>", <#=paramsNames[i]#> != null ? <#=paramsNames[i]#>.ToString() : null);
 <# }
 					if(paramsPlacements.ElementAt(i) == "path") { #>				APIPath = APIPath.Replace(":<#=paramsNames[i]#>", (string)<#=paramsNames[i]#>);
 <# }
-					if(paramsPlacements.ElementAt(i) == "body") { #>				bodyJSON = JsonConvert.SerializeObject(<#=paramsNames[i]#>);
-<# }
+					
                 }
 
 				// Determine the return type of the response and what should be extracted from it to be returned to caller, as well as the API method type
@@ -382,6 +394,22 @@ foreach (var model in modelsJSON.First.First)
 			if(input == "bool")
 				return true;
 			if(input == "geopoint")
+				return true;
+			return false;
+        }
+
+		// Checks if a type name is C# primitive
+		private static bool isCSPrimitive(string someType)
+        {
+			string input = null;
+			if(someType != null)
+				input = someType.ToLower();
+
+			if(input == "double")
+				return true;
+			if(input == "string")
+				return true;
+			if(input == "bool")
 				return true;
 			return false;
         }

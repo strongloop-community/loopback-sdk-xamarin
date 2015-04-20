@@ -23,7 +23,7 @@ namespace LBXamarinSDKGenerator
         * Debug Tool
         */
         public void WriteDefinitionsDebug(string jsonModel)
-        {   
+        {
             Console.WriteLine(">> Writing server Json definition to D:\\debug.txt");
             System.IO.StreamWriter file = new System.IO.StreamWriter("D:\\debug.txt");
             file.Write(jsonModel);
@@ -134,5 +134,5 @@ namespace LBXamarinSDK
             Gateway.SetDebugMode(true);
         }
     }
-}
-*/
+}*/
+
