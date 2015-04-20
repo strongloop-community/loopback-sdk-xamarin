@@ -338,10 +338,10 @@ namespace LBXamarinSDK
 
 		private static int parseStatusCode(string responseString)
 		{
-            Regex parseRegex = new Regex(@"[0-9]{3}");
-            if (parseRegex.IsMatch(responseString))
+            Regex statusCodeRegex = new Regex(@"[0-9]{3}");
+            if (statusCodeRegex.IsMatch(responseString))
             {
-                Match match = Regex.Match(responseString, @"[0-9]{3}");
+                Match match = statusCodeRegex.Match(responseString);
 				return Int32.Parse(match.Groups[0].Value);
 			}
 			else
