@@ -13,4 +13,6 @@ packages/
 C#/packages/
 C#/lb-xmTesters/bin/
 C#/lb-xmTesters/obj/
+C#/SDK Example/ExampleApp/obj
+C#/SDK Example/ExampleApp/bin
 test-server/node_modules/

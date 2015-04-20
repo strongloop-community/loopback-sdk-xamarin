@@ -148,7 +148,7 @@
         android:layout_marginLeft="60.0dp"
         android:id="@+id/editText5" />
     <TextView
-        android:text="Longtitude"
+        android:text="Longitude"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:layout_width="match_parent"
         android:layout_height="24.7dp"
