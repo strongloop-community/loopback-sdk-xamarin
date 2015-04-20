@@ -181,11 +181,11 @@ namespace LBXamarinSDK
 		// Parses a server request then makes it through MakeRequest
         public static async Task<T> PerformRequest<T>(string APIUrl, string json, string method = "POST", IDictionary<string, string> queryStrings = null)
 		{
-			if(_debugMode)
-				Console.WriteLine("-------- >> DEBUG: Performing " + method + " request, Json: " + (string.IsNullOrEmpty(json) ? "EMPTY" : json));
-
-		    RestRequest request = null;
+			RestRequest request = null;
             request = new RestRequest(APIUrl, new HttpMethod(method));
+
+            if(_debugMode)
+                Console.WriteLine("-------- >> DEBUG: Performing " + method + " request at URL: '" + _client.BuildUri(request) + "', Json: " + (string.IsNullOrEmpty(json) ? "EMPTY" : json));
 
 			// Add query parameters to the request
             if (queryStrings != null)
