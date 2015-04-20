@@ -295,7 +295,14 @@ namespace Agents
 
 		public async void doLogout(Object sender, EventArgs e)
 		{
-			await Operators.logout ();
+			try
+			{
+				await Operators.logout ();
+			}
+			catch(RestException)
+			{
+				Toast.MakeText (this, "You are not logged in, how can you log out?", ToastLength.Short).Show ();
+			}
 			Gateway.ResetAccessToken ();
 			UnlockLoginUI ();
 		}
