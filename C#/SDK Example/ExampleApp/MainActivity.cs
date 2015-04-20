@@ -177,7 +177,8 @@ namespace Agents
 					}
 					catch(Exception)
 					{
-
+						// All loopback repositories throw RestException on failure. 
+						// This is a placeholder for logic on this failure of missions.find
 					}
 			});
 		}
@@ -204,16 +205,8 @@ namespace Agents
 
 		public async void updateConnectedStatus(object source, ElapsedEventArgs e)
 		{
-			connected = true;
-			try
-			{
-				connected =  await Gateway.isConnected (500);
-			}
-			catch(RestException) 
-			{
-				connected = false;
-			}
-
+			
+			connected =  await Gateway.isConnected (500);
 			RunOnUiThread(delegate {
 				if(connected)
 				{
