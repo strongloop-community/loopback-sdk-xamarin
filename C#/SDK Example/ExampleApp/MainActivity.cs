@@ -7,96 +7,79 @@ using LBXamarinSDK.LBRepo;
 using System.Timers;
 using System.Collections.Generic;
 using System.Linq;
+using ExampleApp;
 
 namespace Agents
 {
-	[Activity (Label = "SDK Use Example: Missions", MainLauncher = true, Icon = "@drawable/icon")]
-
-
-
-
-
+	[Activity (Label = "Loopback SDK Usage Example", MainLauncher = true, Icon = "@drawable/icon")]
 	public class MainActivity : Activity
 	{
-		System.Timers.Timer t1;
-		System.Timers.Timer missionsTimer1;
+		bool connected = false;
+		System.Timers.Timer connectedTimer;
+		System.Timers.Timer dataReloadTimer;
 		IList<Mission> missions = new List<Mission>();
 
 		Button loginButton;
 		Button logoutButton;
 		Button missionCreateButton;
-
 		ListView listView;
-
 		TextView missionPriorityText;
 		TextView geoLocationText;
 		EditText passwordText;
 		EditText missionDescriptionText;
 		EditText priorityText;
 		EditText latitudeText;
-		EditText longtitudeText;
+		EditText longitudeText;
 		TextView creationStatus;
 		TextView connectedStatus;
 		EditText loginText;
 		TextView loginStatus;
 
-		private void initUI()
+		/**
+		 * Initializes all references to a particular view component
+		 */
+		private void initUiReferences()
 		{
-
-
-
-
-
-
 			loginButton = FindViewById<Button> (Resource.Id.button1);
 			logoutButton = FindViewById<Button> (Resource.Id.button2);
 			missionCreateButton = FindViewById<Button> (Resource.Id.button3);
-
 			listView = FindViewById<ListView> (Resource.Id.listView1);
-
 			loginStatus = FindViewById<TextView> (Resource.Id.textView3);
 			missionPriorityText = FindViewById<TextView> (Resource.Id.textView7);
 			geoLocationText = FindViewById<TextView> (Resource.Id.textView8);
-
 			connectedStatus = FindViewById<TextView> (Resource.Id.textView5);
 			creationStatus = FindViewById<TextView> (Resource.Id.textView13);
-
-
 			passwordText = FindViewById<EditText> (Resource.Id.editText1);
 			loginText = FindViewById<EditText> (Resource.Id.editText2);
 			missionDescriptionText = FindViewById<EditText> (Resource.Id.editText3);
 			priorityText = FindViewById<EditText> (Resource.Id.editText4);
 			latitudeText = FindViewById<EditText> (Resource.Id.editText5);
-			longtitudeText = FindViewById<EditText> (Resource.Id.editText6);
-
-
+			longitudeText = FindViewById<EditText> (Resource.Id.editText6);
 		}
 
 		protected override void OnCreate (Bundle bundle)
 		{
 			base.OnCreate (bundle);
 			SetContentView (Resource.Layout.Main);
-			initUI ();
+			initUiReferences ();
 
-			Gateway.SetServerBaseURL (new Uri("http://10.0.0.20:3000/api/"));
 			Gateway.SetDebugMode (true);
+			Gateway.SetServerBaseURL (new Uri("http://10.0.0.30:3000/api/"));
 
 			loginButton.Click += doLogin;
 			logoutButton.Click += doLogout;
-
 			missionCreateButton.Click += createMission;
+
 			var listAdapter = new ArrayAdapter<string>(this, Android.Resource.Layout.SimpleListItem1, new List<string>());
-
-
 			listView.Adapter = listAdapter;
-			listView.ItemClick += delegate(object sender, AdapterView.ItemClickEventArgs e) {
+			listView.ItemClick += delegate(object sender, AdapterView.ItemClickEventArgs e) 
+			{
 				displayMissionDetails(e.Id);
 			};
 
 			updateMissions (null, null);
 			StartMissionUpdateTimer ();
 			StartConnectedIntervalChecks ();
-
 		}
 
 
@@ -104,96 +87,133 @@ namespace Agents
 		{
 			Mission clickedOnMission = missions.ElementAt ((int)id);
 
-			const int priorityBar = 3;
-			if (clickedOnMission.priority < priorityBar) {
+			const int priorityRedThreshold = 3;
+
+			if (clickedOnMission.priority < priorityRedThreshold) 
+			{
 				missionPriorityText.SetTextColor (Android.Graphics.Color.Red);
-			} else {
+			} 
+			else 
+			{
 				missionPriorityText.SetTextColor (Android.Graphics.Color.White);
 			}
 
 			missionPriorityText.Text = "Mission: " + clickedOnMission.description + " Priority " + clickedOnMission.priority.ToString();
-			if (clickedOnMission.location != null) {
+
+			if (clickedOnMission.location != null) 
+			{
 				geoLocationText.Text = "The mission " + clickedOnMission.description + " will take place at coordinates (" 
-									+ clickedOnMission.location.Longtitude + ", " + clickedOnMission.location.Latitude + ")";
+					+ clickedOnMission.location.Longitude + ", " + clickedOnMission.location.Latitude + ")";
 			}
 		}
-			
+
 
 		public async void createMission(Object sender, EventArgs e)
 		{
-			Mission createdMission = new Mission () {
+			Mission createdMission = new Mission () 
+			{
 				description = missionDescriptionText.Text
 			};
 
-			const int defaultPriority = 10;
-			if (priorityText.Text != "") {
-				createdMission.priority = int.Parse (priorityText.Text);
-			} else {
-				createdMission.priority = defaultPriority;
-			}
 
-			if (longtitudeText.Text != "" && latitudeText.Text != "") {
-				createdMission.location = new GeoPoint () {
+			if (!string.IsNullOrEmpty(priorityText.Text)) 
+			{
+				createdMission.priority = int.Parse (priorityText.Text);
+			} 
+
+			if (!string.IsNullOrEmpty(longitudeText.Text) && !string.IsNullOrEmpty(latitudeText.Text))
+			{
+				createdMission.location = new GeoPoint () 
+				{
 					Latitude = int.Parse (latitudeText.Text),
-					Longtitude = int.Parse (longtitudeText.Text)
+					Longitude = int.Parse (longitudeText.Text)
 				};
 			}
 
-			createdMission = await Missions.Create (createdMission);
-
-			if (createdMission != null) {
+			try
+			{
+				createdMission = await Missions.Create (createdMission);
 
 				creationStatus.SetTextColor(Android.Graphics.Color.Green);
 				creationStatus.Text = "Mission created successfully.";
 				missionDescriptionText.Text = "";
 				priorityText.Text = "";
 				latitudeText.Text = "";
-				longtitudeText.Text = "";
+				longitudeText.Text = "";
 				updateMissions (null, null);
 
-			} else {
+			}
+			catch(RestException exception)
+			{
 				creationStatus.SetTextColor(Android.Graphics.Color.Red);
-				creationStatus.Text = "Creation failed. Are you authorized to create?";
+				creationStatus.Text = "Creation failed.";
+
+
+				if (exception.StatusCode == 401) 
+				{
+					Toast.MakeText (this, "Creation failed: You are not authorized to create, please log in.", ToastLength.Short).Show ();
+				} 
+				else if (exception.StatusCode == 422) 
+				{
+					Toast.MakeText (this, "Creation failed: Please make sure that you've filled all the required mission details.", ToastLength.Short).Show ();
+				} 
+				else 
+				{
+					Toast.MakeText (this, "Creation failed" + exception.StatusCode.ToString(), ToastLength.Short).Show ();
+				}
 			}
 		}
 
 		public async void updateMissions(object source, ElapsedEventArgs e)
 		{
-			RunOnUiThread (async delegate {
-				missions = await Missions.Find ();
+			RunOnUiThread (async delegate 
+				{
+					try
+					{
+						missions = await Missions.Find ();
+						ArrayAdapter<string> listAdapter = listView.Adapter as ArrayAdapter<string>;
+						listAdapter.Clear();
+						listAdapter.AddAll(missions.Select(x => x.description).ToList());
+					}
+					catch(Exception)
+					{
 
-				ArrayAdapter<string> listAdapter = listView.Adapter as ArrayAdapter<string>;
-
-				listAdapter.Clear();
-				if(missions != null) {
-					listAdapter.AddAll(missions.Select(x => x.description).ToList());
-				}
+					}
 			});
 		}
 
 		public void StartMissionUpdateTimer()
 		{
-			missionsTimer1 = new System.Timers.Timer(3000);
-			missionsTimer1.Elapsed += new ElapsedEventHandler(updateMissions);
-			missionsTimer1.Interval = 3000;
-			missionsTimer1.Enabled = true;
-			missionsTimer1.Start();
+			dataReloadTimer = new System.Timers.Timer(3000);
+			dataReloadTimer.Elapsed += new ElapsedEventHandler(updateMissions);
+			dataReloadTimer.Interval = 3000;
+			dataReloadTimer.Enabled = true;
+			dataReloadTimer.Start();
 		}
 
 
 		public void StartConnectedIntervalChecks()
 		{
-			t1 = new System.Timers.Timer(1000);
-			t1.Elapsed += new ElapsedEventHandler(updateConnectedStatus);
-			t1.Interval = 1000;
-			t1.Enabled = true;
-			t1.Start();
+			connectedTimer = new System.Timers.Timer(3000);
+			connectedTimer.Elapsed += new ElapsedEventHandler(updateConnectedStatus);
+			connectedTimer.Interval = 3000;
+			connectedTimer.Enabled = true;
+			connectedTimer.Start();
 		}
 
 
 		public async void updateConnectedStatus(object source, ElapsedEventArgs e)
 		{
-			bool connected =  await Gateway.isConnected (500);
+			connected = true;
+			try
+			{
+				connected =  await Gateway.isConnected (500);
+			}
+			catch(RestException) 
+			{
+				connected = false;
+			}
+
 			RunOnUiThread(delegate {
 				if(connected)
 				{
@@ -232,7 +252,7 @@ namespace Agents
 			}
 
 		}
-			
+
 		public void lockLoginUI()
 		{
 			loginStatus.SetTextColor(Android.Graphics.Color.Green);
@@ -255,23 +275,27 @@ namespace Agents
 
 		public async void doLogin(Object sender, EventArgs e)
 		{
-			if (passwordText.Text == "" || loginText.Text == "") {
+			if (string.IsNullOrEmpty(passwordText.Text) || string.IsNullOrEmpty(loginText.Text)) 
+			{
 				Toast.MakeText (this, "Can't login with empty credentials.", ToastLength.Short).Show ();
 				return;
 			}
 
-			try {
-				Operator loginCredentials = new Operator () {
+			try 
+			{
+				Operator loginCredentials = new Operator () 
+				{
 					password = passwordText.Text,
 					email = loginText.Text
 				};
-
 				AccessToken accessToken = await Operators.login (loginCredentials);
+
 				lockLoginUI();
 				Gateway.SetAccessToken(accessToken);
-
-			} catch(Exception)
+			}
+			catch(Exception)
 			{
+				Toast.MakeText (this, "Login failed.", ToastLength.Short).Show ();
 				UnlockLoginUI ();
 			}
 		}
