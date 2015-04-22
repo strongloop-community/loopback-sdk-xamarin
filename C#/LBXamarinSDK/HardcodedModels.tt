@@ -206,7 +206,7 @@ namespace LBXamarinSDK
             }
 
 			// Add body parameters to the request
-			if (method == "POST" || method == "PUT")
+			if ((method == "POST" || method == "PUT") && json != "")
             {
 				request.AddHeader("ContentType", "application/json");
 				try
