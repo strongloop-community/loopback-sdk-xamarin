@@ -161,11 +161,11 @@ namespace LBXamarinSDK
 		// Parses a server request then makes it through MakeRequest
         public static async Task<T> PerformRequest<T>(string APIUrl, string json, string method = "POST", IDictionary<string, string> queryStrings = null)
 		{
-			if(_debugMode)
-				Console.WriteLine("-------- >> DEBUG: Performing " + method + " request, Json: " + (string.IsNullOrEmpty(json) ? "EMPTY" : json));
-
-		    RestRequest request = null;
+			RestRequest request = null;
             request = new RestRequest(APIUrl, new HttpMethod(method));
+
+            if(_debugMode)
+                Console.WriteLine("-------- >> DEBUG: Performing " + method + " request at URL: '" + _client.BuildUri(request) + "', Json: " + (string.IsNullOrEmpty(json) ? "EMPTY" : json));
 
 			// Add query parameters to the request
             if (queryStrings != null)
@@ -186,7 +186,7 @@ namespace LBXamarinSDK
             }
 
 			// Add body parameters to the request
-			if (method == "POST" || method == "PUT")
+			if ((method == "POST" || method == "PUT") && json != "")
             {
 				request.AddHeader("ContentType", "application/json");
 				try
@@ -310,13 +310,11 @@ namespace LBXamarinSDK
 
 		private static int parseStatusCode(string responseString)
 		{
-            //Regex parseRegex = new Regex(@"\:\ [0-9]{3}\ \(");
-			Regex parseRegex = new Regex(@"[0-9]{3}");
-            if (parseRegex.IsMatch(responseString))
+            Regex statusCodeRegex = new Regex(@"[0-9]{3}");
+            if (statusCodeRegex.IsMatch(responseString))
             {
-                //Match match = Regex.Match(responseString, @"\:\ ([0-9]{3})\ \(");
-				Match match = Regex.Match(responseString, @"([0-9]{3})");
-				return Int32.Parse(match.Groups[1].Value);
+                Match match = statusCodeRegex.Match(responseString);
+				return Int32.Parse(match.Groups[0].Value);
 			}
 			else
 			{
@@ -550,7 +548,7 @@ namespace LBXamarinSDK
 		{
 
 			/*
-			 * Find a related item by id for accessTokens
+			 * Find a related item by id for accessTokens.
 			 */
 			public static async Task<AccessToken> findByIdAccessTokens(string id, string fk)
 			{
@@ -564,7 +562,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Delete a related item by id for accessTokens
+			 * Delete a related item by id for accessTokens.
 			 */
 			public static async Task destroyByIdAccessTokens(string id, string fk)
 			{
@@ -578,7 +576,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Update a related item by id for accessTokens
+			 * Update a related item by id for accessTokens.
 			 */
 			public static async Task<AccessToken> updateByIdAccessTokens(AccessToken data, string id, string fk)
 			{
@@ -648,7 +646,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Login a user with username/email and password
+			 * Login a user with username/email and password.
 			 */
 			public static async Task<JObject> login(User credentials, string include = default(string))
 			{
@@ -705,7 +703,7 @@ namespace LBXamarinSDK
 		{
 
 			/*
-			 * Find a related item by id for accessTokens
+			 * Find a related item by id for accessTokens.
 			 */
 			public static async Task<AccessToken> findByIdAccessTokens(string id, string fk)
 			{
@@ -719,7 +717,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Delete a related item by id for accessTokens
+			 * Delete a related item by id for accessTokens.
 			 */
 			public static async Task destroyByIdAccessTokens(string id, string fk)
 			{
@@ -733,7 +731,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Update a related item by id for accessTokens
+			 * Update a related item by id for accessTokens.
 			 */
 			public static async Task<AccessToken> updateByIdAccessTokens(AccessToken data, string id, string fk)
 			{
@@ -748,7 +746,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Find a related item by id for roles
+			 * Find a related item by id for roles.
 			 */
 			public static async Task<Role> findByIdRoles(string id, string fk)
 			{
@@ -762,7 +760,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Delete a related item by id for roles
+			 * Delete a related item by id for roles.
 			 */
 			public static async Task destroyByIdRoles(string id, string fk)
 			{
@@ -776,7 +774,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Update a related item by id for roles
+			 * Update a related item by id for roles.
 			 */
 			public static async Task<Role> updateByIdRoles(Role data, string id, string fk)
 			{
@@ -791,7 +789,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Add a related item by id for roles
+			 * Add a related item by id for roles.
 			 */
 			public static async Task<RoleMapping> linkRoles(RoleMapping data, string id, string fk)
 			{
@@ -806,7 +804,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Remove the roles relation to an item by id
+			 * Remove the roles relation to an item by id.
 			 */
 			public static async Task unlinkRoles(string id, string fk)
 			{
@@ -820,7 +818,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Check the existence of roles relation to an item by id
+			 * Check the existence of roles relation to an item by id.
 			 */
 			public static async Task<bool> existsRoles(string id, string fk)
 			{
@@ -944,7 +942,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Login a user with username/email and password
+			 * Login a user with username/email and password.
 			 */
 			public static async Task<JObject> login(MiniUser credentials, string include = default(string))
 			{
@@ -1001,7 +999,7 @@ namespace LBXamarinSDK
 		{
 
 			/*
-			 * Fetches belongsTo relation role
+			 * Fetches belongsTo relation role.
 			 */
 			public static async Task<Role> getRole(string id, bool refresh = default(bool))
 			{
@@ -1015,7 +1013,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Find a related item by id for principals
+			 * Find a related item by id for principals.
 			 */
 			public static async Task<RoleMapping> findByIdForRole(string id, string fk)
 			{
@@ -1029,7 +1027,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Delete a related item by id for principals
+			 * Delete a related item by id for principals.
 			 */
 			public static async Task destroyByIdForRole(string id, string fk)
 			{
@@ -1043,7 +1041,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Update a related item by id for principals
+			 * Update a related item by id for principals.
 			 */
 			public static async Task<RoleMapping> updateByIdForRole(RoleMapping data, string id, string fk)
 			{
@@ -1116,7 +1114,7 @@ namespace LBXamarinSDK
 		{
 
 			/*
-			 * Find a related item by id for principals
+			 * Find a related item by id for principals.
 			 */
 			public static async Task<RoleMapping> findByIdPrincipals(string id, string fk)
 			{
@@ -1130,7 +1128,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Delete a related item by id for principals
+			 * Delete a related item by id for principals.
 			 */
 			public static async Task destroyByIdPrincipals(string id, string fk)
 			{
@@ -1144,7 +1142,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Update a related item by id for principals
+			 * Update a related item by id for principals.
 			 */
 			public static async Task<RoleMapping> updateByIdPrincipals(RoleMapping data, string id, string fk)
 			{
@@ -1214,7 +1212,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Find a related item by id for roles
+			 * Find a related item by id for roles.
 			 */
 			public static async Task<Role> findByIdForminiUser(string id, string fk)
 			{
@@ -1228,7 +1226,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Delete a related item by id for roles
+			 * Delete a related item by id for roles.
 			 */
 			public static async Task destroyByIdForminiUser(string id, string fk)
 			{
@@ -1242,7 +1240,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Update a related item by id for roles
+			 * Update a related item by id for roles.
 			 */
 			public static async Task<Role> updateByIdForminiUser(Role data, string id, string fk)
 			{
@@ -1257,7 +1255,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Add a related item by id for roles
+			 * Add a related item by id for roles.
 			 */
 			public static async Task<RoleMapping> linkForminiUser(RoleMapping data, string id, string fk)
 			{
@@ -1272,7 +1270,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Remove the roles relation to an item by id
+			 * Remove the roles relation to an item by id.
 			 */
 			public static async Task unlinkForminiUser(string id, string fk)
 			{
@@ -1286,7 +1284,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Check the existence of roles relation to an item by id
+			 * Check the existence of roles relation to an item by id.
 			 */
 			public static async Task<bool> existsForminiUser(string id, string fk)
 			{
@@ -1355,7 +1353,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Fetches belongsTo relation role
+			 * Fetches belongsTo relation role.
 			 */
 			public static async Task<Role> getForRoleMapping(string id, bool refresh = default(bool))
 			{
@@ -1372,7 +1370,7 @@ namespace LBXamarinSDK
 		{
 
 			/*
-			 * Find a related item by id for reviews
+			 * Find a related item by id for reviews.
 			 */
 			public static async Task<Review> findByIdReviews(string id, string fk)
 			{
@@ -1386,7 +1384,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Delete a related item by id for reviews
+			 * Delete a related item by id for reviews.
 			 */
 			public static async Task destroyByIdReviews(string id, string fk)
 			{
@@ -1400,7 +1398,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Update a related item by id for reviews
+			 * Update a related item by id for reviews.
 			 */
 			public static async Task<Review> updateByIdReviews(Review data, string id, string fk)
 			{
@@ -1415,7 +1413,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Find a related item by id for orders
+			 * Find a related item by id for orders.
 			 */
 			public static async Task<Order> findByIdOrders(string id, string fk)
 			{
@@ -1429,7 +1427,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Delete a related item by id for orders
+			 * Delete a related item by id for orders.
 			 */
 			public static async Task destroyByIdOrders(string id, string fk)
 			{
@@ -1443,7 +1441,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Update a related item by id for orders
+			 * Update a related item by id for orders.
 			 */
 			public static async Task<Order> updateByIdOrders(Order data, string id, string fk)
 			{
@@ -1619,7 +1617,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Fetches belongsTo relation author
+			 * Fetches belongsTo relation author.
 			 */
 			public static async Task<Customer> getForReview(string id, bool refresh = default(bool))
 			{
@@ -1633,7 +1631,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Fetches belongsTo relation customer
+			 * Fetches belongsTo relation customer.
 			 */
 			public static async Task<Customer> getForOrder(string id, bool refresh = default(bool))
 			{
@@ -1650,7 +1648,7 @@ namespace LBXamarinSDK
 		{
 
 			/*
-			 * Fetches belongsTo relation author
+			 * Fetches belongsTo relation author.
 			 */
 			public static async Task<Customer> getAuthor(string id, bool refresh = default(bool))
 			{
@@ -1664,7 +1662,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Find a related item by id for reviews
+			 * Find a related item by id for reviews.
 			 */
 			public static async Task<Review> findByIdForCustomer(string id, string fk)
 			{
@@ -1678,7 +1676,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Delete a related item by id for reviews
+			 * Delete a related item by id for reviews.
 			 */
 			public static async Task destroyByIdForCustomer(string id, string fk)
 			{
@@ -1692,7 +1690,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Update a related item by id for reviews
+			 * Update a related item by id for reviews.
 			 */
 			public static async Task<Review> updateByIdForCustomer(Review data, string id, string fk)
 			{
@@ -1765,7 +1763,7 @@ namespace LBXamarinSDK
 		{
 
 			/*
-			 * Fetches belongsTo relation customer
+			 * Fetches belongsTo relation customer.
 			 */
 			public static async Task<Customer> getCustomer(string id, bool refresh = default(bool))
 			{
@@ -1779,7 +1777,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Find a related item by id for orders
+			 * Find a related item by id for orders.
 			 */
 			public static async Task<Order> findByIdForCustomer(string id, string fk)
 			{
@@ -1793,7 +1791,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Delete a related item by id for orders
+			 * Delete a related item by id for orders.
 			 */
 			public static async Task destroyByIdForCustomer(string id, string fk)
 			{
@@ -1807,7 +1805,7 @@ namespace LBXamarinSDK
 			}
 
 			/*
-			 * Update a related item by id for orders
+			 * Update a related item by id for orders.
 			 */
 			public static async Task<Order> updateByIdForCustomer(Order data, string id, string fk)
 			{
