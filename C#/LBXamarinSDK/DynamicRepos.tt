@@ -32,6 +32,10 @@ namespace LBXamarinSDK
 		*/
         public abstract class CRUDInterface<T> where T : LBModel
         {
+			protected const string jsonBeginChar = "{";
+			protected const string jsonBegin = "{ val: ";
+			protected const string jsonEnd = " }";
+
 			private static readonly Dictionary<string, string> APIDictionary = new Dictionary<string, string>
             {
 <#
@@ -297,6 +301,17 @@ foreach (var model in modelsJSON.First.First)
 				string APIMethod = rawMethodData.First.First.ElementAt(1).First.ToString();
 				
 #>				var response = await Gateway.PerformRequest<<#=templatesString#>>(APIPath, bodyJSON, "<#=APIMethod#>", queryStrings).ConfigureAwait(false);
+<#if(isPrimitive(returnTypeOrig) && !returnTypeIsArray) 
+{ 
+	// If the response is string, it needs to be encapsulated with 's before JObject can parse it.
+	string rootResponseString = "response.ToString()";
+	if(returnTypeOrig.ToLower() == "string")
+	{
+		rootResponseString = "\"'\" + " + rootResponseString + " + \"'\"";
+	}
+
+#>				string parsingTarget = response.ToString().StartsWith(jsonBeginChar) ? response.ToString() : jsonBegin + <#=rootResponseString#> + jsonEnd;
+<#}#>
 				<#=returnStatementString#>
 			}
 <#
@@ -320,7 +335,7 @@ foreach (var model in modelsJSON.First.First)
 			if(isPrimitive(returnTypeOrig) && !returnTypeIsArray)
             {
 				templatesString = "object";
-				returnStatementString = "return JObject.Parse(response.ToString()).First.First.ToObject<" + returnTypeOrig + ">();";
+				returnStatementString = "return JObject.Parse(parsingTarget).First.First.ToObject<" + returnTypeOrig + ">();";
             }
 			else if (returnTypeOrig == "void")
             {
