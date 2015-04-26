@@ -49,7 +49,7 @@ Creation of Loopback SDK for Xamarin Studio or C# project.
 
         -The Testing unit is an example of building tests for a server
         -Calibrated to work with the test server, using classes which are in a LBXamarinSDK.cs file, created specifically for that server 
-        -Changing the server without compiling a new LBXamatinSDK.cs will probably cause it not to work, or give false results
+        -Changing the server without compiling a new LBXamarinSDK.cs will probably cause it not to work, or give false results
 
 
 ### How do I get set up? ###
