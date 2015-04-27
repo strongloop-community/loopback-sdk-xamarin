@@ -21,23 +21,10 @@ using System.Text.RegularExpressions;
 
 namespace LBXamarinSDK
 {
-	// Custom response for basic CRUD operations
-	public class ExistenceResponse
-    {
-        [Newtonsoft.Json.JsonProperty("exists")]
-        public bool exists { get; set; }
-    }
-    public class CountResponse
-    {
-        [Newtonsoft.Json.JsonProperty("count")]
-        public int count { get; set; }
-    }
-
 	// Gateway: Communication with Server API
 	public class Gateway
     {
         private static Uri BASE_URL = new Uri("http://10.0.0.1:3000/api/");
-		
 		private static RestClient _client = new RestClient {BaseUrl = BASE_URL};
         private static string _accessToken = null;
 		private static bool _debugMode = false;
@@ -189,14 +176,7 @@ namespace LBXamarinSDK
 			if ((method == "POST" || method == "PUT") && json != "")
             {
 				request.AddHeader("ContentType", "application/json");
-				try
-				{
-					request.AddParameter ("application/json", JObject.Parse(json), ParameterType.RequestBody);
-				}
-				catch(Exception)
-				{
-					request.AddParameter ("application/json", json, ParameterType.RequestBody);
-				}
+				request.AddParameter ("application/json", JObject.Parse(json), ParameterType.RequestBody);
 			}
 
 			// Make the request, return response
@@ -459,8 +439,8 @@ namespace LBXamarinSDK
             {
                 String APIPath = getAPIPath("Exists");
                 APIPath = APIPath.Replace(":id", ID);
-                var response = await Gateway.PerformGetRequest<ExistenceResponse>(APIPath).ConfigureAwait(false);
-                return response.exists;
+                var response = await Gateway.PerformGetRequest<object>(APIPath).ConfigureAwait(false);
+                return JObject.Parse(response.ToString()).First.First.ToObject<bool>();
             }
 
 			/*
@@ -527,8 +507,8 @@ namespace LBXamarinSDK
                 String APIPath = getAPIPath("Count");
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				queryStrings.Add("where", whereFilter);
-                var response = await Gateway.PerformGetRequest<CountResponse>(APIPath, queryStrings).ConfigureAwait(false);
-                return response.count;
+                var response = await Gateway.PerformGetRequest<object>(APIPath, queryStrings).ConfigureAwait(false);
+                return JObject.Parse(response.ToString()).First.First.ToObject<int>();
             }
 
 			/*
@@ -827,8 +807,8 @@ namespace LBXamarinSDK
 				string bodyJSON = "";
 				APIPath = APIPath.Replace(":id", (string)id);
 				APIPath = APIPath.Replace(":fk", (string)fk);
-				var response = await Gateway.PerformRequest<object>(APIPath, bodyJSON, "HEAD", queryStrings).ConfigureAwait(false);
-				return JObject.Parse(response.ToString()).First.First.ToObject<bool>();
+				var response = await Gateway.PerformRequest<bool>(APIPath, bodyJSON, "HEAD", queryStrings).ConfigureAwait(false);
+				return response;
 			}
 
 			/*
@@ -1293,8 +1273,8 @@ namespace LBXamarinSDK
 				string bodyJSON = "";
 				APIPath = APIPath.Replace(":id", (string)id);
 				APIPath = APIPath.Replace(":fk", (string)fk);
-				var response = await Gateway.PerformRequest<object>(APIPath, bodyJSON, "HEAD", queryStrings).ConfigureAwait(false);
-				return JObject.Parse(response.ToString()).First.First.ToObject<bool>();
+				var response = await Gateway.PerformRequest<bool>(APIPath, bodyJSON, "HEAD", queryStrings).ConfigureAwait(false);
+				return response;
 			}
 
 			/*

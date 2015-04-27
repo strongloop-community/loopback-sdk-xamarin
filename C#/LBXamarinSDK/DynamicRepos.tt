@@ -32,10 +32,6 @@ namespace LBXamarinSDK
 		*/
         public abstract class CRUDInterface<T> where T : LBModel
         {
-			protected const string jsonBeginChar = "{";
-			protected const string jsonBegin = "{ val: ";
-			protected const string jsonEnd = " }";
-
 			private static readonly Dictionary<string, string> APIDictionary = new Dictionary<string, string>
             {
 <#
@@ -123,8 +119,8 @@ foreach (var model in modelsJSON.First.First)
             {
                 String APIPath = getAPIPath("Exists");
                 APIPath = APIPath.Replace(":id", ID);
-                var response = await Gateway.PerformGetRequest<ExistenceResponse>(APIPath).ConfigureAwait(false);
-                return response.exists;
+                var response = await Gateway.PerformGetRequest<object>(APIPath).ConfigureAwait(false);
+                return JObject.Parse(response.ToString()).First.First.ToObject<bool>();
             }
 
 			/*
@@ -191,8 +187,8 @@ foreach (var model in modelsJSON.First.First)
                 String APIPath = getAPIPath("Count");
 				IDictionary<string, string> queryStrings = new Dictionary<string, string>();
 				queryStrings.Add("where", whereFilter);
-                var response = await Gateway.PerformGetRequest<CountResponse>(APIPath, queryStrings).ConfigureAwait(false);
-                return response.count;
+                var response = await Gateway.PerformGetRequest<object>(APIPath, queryStrings).ConfigureAwait(false);
+                return JObject.Parse(response.ToString()).First.First.ToObject<int>();
             }
 
 			/*
@@ -238,14 +234,15 @@ foreach (var model in modelsJSON.First.First)
 				bool jsonIsArraySpecification = rawMethodData.First.First.ElementAt(3).First.Count() > 0 ? (bool)rawMethodData.First.First.ElementAt(3).First.ElementAt(1).First : false;
                 bool returnTypeIsArray = determineReturnIsArray(jsonIsArraySpecification, returnTypeOrig);
 				string returnType = finalParseReturnType(returnTypeOrig, returnTypeIsArray);
-
+				bool returnIsRoot = rawMethodData.First.First.ElementAt(3).First.Count() > 0 ? (bool)rawMethodData.First.First.ElementAt(3).First.ElementAt(2).First : false;
+				
 				// Get the parameters passed to the method
 				var paramsRawData = JObject.Parse(methodJsonToken.First.ElementAt(2).First.ToString());
                 IList<string> paramsNames = paramsRawData.Properties().Select(p => p.Name).ToList();
                 List<string> paramsTypes = paramsRawData.PropertyValues().Select(p => p.First.First.ToString()).ToList();
                 List<string> paramsPlacements = paramsRawData.PropertyValues().Select(p => p.ElementAt(1).First.ToString()).ToList();
 
-				// Create a presentable, meaningful and C# legal method name
+				// Create a presentable, meaningful and C# legal method name. TODO: Improve the method naming to be more meaningful and distinct
 				string presentableMethodName = createPresentableMethodName(methodName, ref parsedMethodNames);
 #>
 
@@ -254,7 +251,7 @@ foreach (var model in modelsJSON.First.First)
 			 */
 			public static async Task<#=returnType#> <#=presentableMethodName#>(<#
 
-				// Sort the parameters so that the query parameters, which we add as default parameters, will be last.
+				// Sort the parameters so that the query parameters, to which we add as default parameters, will be last.
 				var secondaryZip = paramsNames.Zip(paramsTypes, (x, y) => new { x, y }).ToList();
 				var zip = paramsPlacements.Zip(secondaryZip, (x, y) => new { x, y }).OrderBy(pair => pair.x).ToList().ToList();
 				paramsPlacements = zip.Select(pair => pair.x).ToList();
@@ -264,7 +261,9 @@ foreach (var model in modelsJSON.First.First)
 				// After being sorted, add the parameter to the argument list of the function
 				for(int i = 0; i < paramsNames.Count; ++i)
 				{
-					#><#= determineParamType(paramsTypes.ElementAt(i), paramsPlacements.ElementAt(i), model.First.First.ToString())#> <#=paramsNames.ElementAt(i)#><#=(paramsPlacements.ElementAt(i) == "query" ? " = default(" + convertToCSType(paramsTypes.ElementAt(i)) +")" : "")#><#if (i < paramsNames.Count - 1) { #>, <#}
+					#><#= determineParamType(paramsTypes.ElementAt(i), 
+											 paramsPlacements.ElementAt(i), 
+											 model.First.First.ToString())#> <#=paramsNames.ElementAt(i)#><#=(paramsPlacements.ElementAt(i) == "query" ? " = default(" + convertToCSType(paramsTypes.ElementAt(i)) +")" : "")#><#if (i < paramsNames.Count - 1) { #>, <#}
 				}
 				
 #>)
@@ -297,21 +296,13 @@ foreach (var model in modelsJSON.First.First)
 
 				// Determine the return type of the response and what should be extracted from it to be returned to caller, as well as the API method type
 				string returnStatementString = "", templatesString = "";
-				determineReturnStatementAndTemplate(ref returnStatementString, ref templatesString, returnTypeOrig, returnTypeIsArray);
 				string APIMethod = rawMethodData.First.First.ElementAt(1).First.ToString();
+
+
+				determineReturnStatementAndTemplate(ref returnStatementString, ref templatesString, returnTypeOrig, returnTypeIsArray, returnIsRoot);
+				
 				
 #>				var response = await Gateway.PerformRequest<<#=templatesString#>>(APIPath, bodyJSON, "<#=APIMethod#>", queryStrings).ConfigureAwait(false);
-<#if(isPrimitive(returnTypeOrig) && !returnTypeIsArray) 
-{ 
-	// If the response is string, it needs to be encapsulated with 's before JObject can parse it.
-	string rootResponseString = "response.ToString()";
-	if(returnTypeOrig.ToLower() == "string")
-	{
-		rootResponseString = "\"'\" + " + rootResponseString + " + \"'\"";
-	}
-
-#>				string parsingTarget = response.ToString().StartsWith(jsonBeginChar) ? response.ToString() : jsonBegin + <#=rootResponseString#> + jsonEnd;
-<#}#>
 				<#=returnStatementString#>
 			}
 <#
@@ -325,26 +316,38 @@ foreach (var model in modelsJSON.First.First)
 
 <#+	
 		// Determines the return type of the response and what should be extracted from it to be returned to caller for a specific method REST call
-		private static void determineReturnStatementAndTemplate(ref string returnStatementString, ref string templatesString, string returnTypeOrig, bool returnTypeIsArray)
+		private static void determineReturnStatementAndTemplate(ref string returnStatementString, ref string templatesString, string returnTypeOrig, bool returnTypeIsArray, bool returnIsRoot)
 		{
+			// should be object if its not root
+
 			returnStatementString = "";
 			templatesString = returnTypeOrig;
+
 			if(returnTypeIsArray)
 				templatesString = templatesString + "[]";
 
-			if(isPrimitive(returnTypeOrig) && !returnTypeIsArray)
+			if(!returnIsRoot)
             {
-				templatesString = "object";
-				returnStatementString = "return JObject.Parse(parsingTarget).First.First.ToObject<" + returnTypeOrig + ">();";
-            }
-			else if (returnTypeOrig == "void")
-            {
-				templatesString = "string";
-				returnStatementString = "";
+				if(returnTypeOrig != "void")
+                {
+					returnStatementString = "return JObject.Parse(response.ToString()).First.First.ToObject<" + templatesString + ">();";
+					templatesString = "object";
+                }
+				else
+                {
+					templatesString = "string";
+                }
             }
 			else
-			{
-				returnStatementString = "return response;";
+            {
+				if(returnTypeOrig != "void")
+                {
+					returnStatementString = "return response;";
+                }
+				else
+                {
+					templatesString = "string";
+                }
             }
         }
 
