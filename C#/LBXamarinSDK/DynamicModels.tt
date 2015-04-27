@@ -8,7 +8,7 @@
 <#@ assembly name="Microsoft.CSharp" #>
 <#@ import namespace="Microsoft.CSharp" #>
 <#/*Uncomment the following line when debugging */ #>
-<#/*@assembly name="C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/SDKGeneratorDLL/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
+<#/*@assembly name="C:/Users/PerfectedTech/Documents/lbxamarinsdk-generator/C#/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
 <# /* ^^ */ #>
 <#@ import namespace="Newtonsoft.Json" #>
 <#@ import namespace="Newtonsoft.Json.Linq" #>

@@ -5,7 +5,7 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.IO" #>
 <# /* Uncomment the following line when debugging */ #>
-<#/*@assembly name="C:/Users/PerfectedTech/Documents/Repositories/lbxamarinsdk-generator/SDKGeneratorDLL/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
+<#/*@assembly name="C:/Users/PerfectedTech/Documents/lbxamarinsdk-generator/C#/LBXamarinSDK/bin/Debug/Newtonsoft.Json.dll"*/#>
 <# /* ^^ */ #>
 <#@ import namespace="Newtonsoft.Json" #>
 <#@ import namespace="Newtonsoft.Json.Linq" #>
@@ -41,23 +41,10 @@ using System.Text.RegularExpressions;
 
 namespace LBXamarinSDK
 {
-	// Custom response for basic CRUD operations
-	public class ExistenceResponse
-    {
-        [Newtonsoft.Json.JsonProperty("exists")]
-        public bool exists { get; set; }
-    }
-    public class CountResponse
-    {
-        [Newtonsoft.Json.JsonProperty("count")]
-        public int count { get; set; }
-    }
-
 	// Gateway: Communication with Server API
 	public class Gateway
     {
         private static Uri BASE_URL = new Uri("http://10.0.0.1:3000/api/");
-		
 		private static RestClient _client = new RestClient {BaseUrl = BASE_URL};
         private static string _accessToken = null;
 		private static bool _debugMode = false;
@@ -209,14 +196,7 @@ namespace LBXamarinSDK
 			if ((method == "POST" || method == "PUT") && json != "")
             {
 				request.AddHeader("ContentType", "application/json");
-				try
-				{
-					request.AddParameter ("application/json", JObject.Parse(json), ParameterType.RequestBody);
-				}
-				catch(Exception)
-				{
-					request.AddParameter ("application/json", json, ParameterType.RequestBody);
-				}
+				request.AddParameter ("application/json", JObject.Parse(json), ParameterType.RequestBody);
 			}
 
 			// Make the request, return response
