@@ -84,7 +84,7 @@ foreach (var model in modelsJSON.First.First)
 				if(!APIDictionary.ContainsKey(dictionaryKey))
 				{
 					if(Gateway.GetDebugMode())
-						Console.WriteLine("Error - no known CRUD path for " + dictionaryKey);
+						System.Diagnostics.Debug.WriteLine("Error - no known CRUD path for " + dictionaryKey);
 					throw new Exception();
 				}
 				return APIDictionary[dictionaryKey];
