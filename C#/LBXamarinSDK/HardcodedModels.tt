@@ -36,7 +36,7 @@ using LBXamarinSDK.LBRepo;
 using System.Net.Http;
 using System.Threading;
 using System.Net;
-using System.Net.Sockets;
+// using System.Net.Sockets;
 using System.Text.RegularExpressions;
 
 namespace LBXamarinSDK
@@ -57,9 +57,9 @@ namespace LBXamarinSDK
 			_debugMode = isDebugMode;
 			if(_debugMode)
 			{
-				Console.WriteLine("******************************");
-				Console.WriteLine("** SDK Gateway Debug Mode.  **");
-				Console.WriteLine("******************************\n");
+				System.Diagnostics.Debug.WriteLine("******************************");
+				System.Diagnostics.Debug.WriteLine("** SDK Gateway Debug Mode.  **");
+				System.Diagnostics.Debug.WriteLine("******************************\n");
 			}
 		}
 
@@ -91,6 +91,8 @@ namespace LBXamarinSDK
         }
 
 		// Define server Base Url for API requests to self local IP
+		// System.Net.Sockets is not supported in Xamarin Forms, if you're not using it you can uncomment it
+		/*
 		public static void SetServerBaseURLToSelf()
 		{
 			var firstOrDefault = Dns.GetHostEntry(Dns.GetHostName()).AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
@@ -98,16 +100,17 @@ namespace LBXamarinSDK
             { 
                 string adrStr = "http://" + firstOrDefault.ToString() + ":3000/api/";
 				if (_debugMode)
-                    Console.WriteLine("-------- >> DEBUG: Setting Gateway URL to " + adrStr);	
+                    System.Diagnostics.Debug.WriteLine("-------- >> DEBUG: Setting Gateway URL to " + adrStr);	
                 SetServerBaseURL(new Uri(adrStr));
             }
 			else
 			{
 				if (_debugMode)
-                    Console.WriteLine("-------- >> DEBUG: Error finding self URL.");
+                    System.Diagnostics.Debug.WriteLine("-------- >> DEBUG: Error finding self URL.");
 				throw new Exception();
 			}
 		}
+		*/
 
 		// Sets an access token to be added as an authorization in all future server requests
         public static void SetAccessToken(AccessToken accessToken)
@@ -143,7 +146,7 @@ namespace LBXamarinSDK
 			catch(Exception e)
 			{
 				if (_debugMode)
-                    Console.WriteLine("-------- >> DEBUG: Error: " + e.Message + " >>");	 
+                    System.Diagnostics.Debug.WriteLine("-------- >> DEBUG: Error: " + e.Message + " >>");	 
 				return false;
 			}
 		}
@@ -172,7 +175,7 @@ namespace LBXamarinSDK
             request = new RestRequest(APIUrl, new HttpMethod(method));
 
             if(_debugMode)
-                Console.WriteLine("-------- >> DEBUG: Performing " + method + " request at URL: '" + _client.BuildUri(request) + "', Json: " + (string.IsNullOrEmpty(json) ? "EMPTY" : json));
+                System.Diagnostics.Debug.WriteLine("-------- >> DEBUG: Performing " + method + " request at URL: '" + _client.BuildUri(request) + "', Json: " + (string.IsNullOrEmpty(json) ? "EMPTY" : json));
 
 			// Add query parameters to the request
             if (queryStrings != null)
@@ -208,7 +211,7 @@ namespace LBXamarinSDK
             catch(Exception e)
 			{
                 if (_debugMode)
-                    Console.WriteLine("-------- >> DEBUG: Error performing request: " + e.Message + " >>");
+                    System.Diagnostics.Debug.WriteLine("-------- >> DEBUG: Error performing request: " + e.Message + " >>");
 				throw new RestException(e.Message);
 			}     
             
