@@ -72,9 +72,17 @@ namespace LBXamarinSDKGenerator
          */
         public async Task<object> Invoke(object input)
         {
-            // Get the DLL output path and json definition of the server
-            string jsonModel = ((Object[]) input)[0].ToString();
+            
+            // Get json definition of the server
+            string jsonModel = ((Object[])input)[0].ToString();
             // WriteDefinitionsDebug(jsonModel);
+
+            // Process flags
+            var flags = new HashSet<string>()
+            {
+                (((Object[])input)[1] ?? "").ToString(),
+                (((Object[])input)[2] ?? "").ToString()
+            };
 
             // Create new templates and pass the definition Json to DynamicModels and DynamicRepos
             var dynamicModelsTemplate = new DynamicModels();
@@ -87,6 +95,16 @@ namespace LBXamarinSDKGenerator
             dynamicReposTemplate.Session["jsonModel"] = jsonModel;
             constantCode.Session = new Dictionary<string, object>();
             constantCode.Session["jsonModel"] = jsonModel;
+            
+            if(flags.Contains("forms"))
+            {
+                Console.WriteLine(">> Parsing for Xamarin-Forms compatibility...");
+                constantCode.Session["XamarinForms"] = true;
+            }
+            else
+            {
+                constantCode.Session["XamarinForms"] = false;
+            }
 
             // Create dynamic code from templates
             dynamicModelsTemplate.Initialize();
@@ -96,18 +114,11 @@ namespace LBXamarinSDKGenerator
             string code = constantCode.TransformText() + dynamicReposTemplate.TransformText() +
                           dynamicModelsTemplate.TransformText();
 
-            // Determine: Compile DLL or output CS
-            var compileFlag = ((Object[]) input)[2];
-            if (compileFlag != null && compileFlag.ToString() == "c")
+            if (flags.Contains("dll"))
             {
-                string outputPath = "SDK.dll";
-                if (((Object[]) input)[1] != null)
-                {
-                    outputPath = ((Object[])input)[1].ToString();
-                }
                 Console.WriteLine(">> Compiling...");
                 string currentPath = ((Object[]) input)[3].ToString();
-                return await Compile(code, outputPath, currentPath);
+                return await Compile(code, "LBXamarinSDK.dll", currentPath);
             }
             else
             {

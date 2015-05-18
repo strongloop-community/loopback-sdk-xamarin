@@ -20,7 +20,6 @@ namespace UnitTests
 				password = "1234"
 			};
 			var accessToken = MiniUsers.login (credentials).Result;
-
 			Assert.AreEqual ("1", accessToken.Property ("userId").Value.ToString ());
 		}
 

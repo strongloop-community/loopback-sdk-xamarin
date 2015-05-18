@@ -8,7 +8,8 @@ Creation of Loopback SDK for Xamarin Studio or C# project.
 
         The repository contains the SDK Generator: JS Code running a compiled c# code that creates the SDK. 
         To create an SDK, go into bin, then E.g. "node lb-xm d:\someserver\server\server.js" will create CS code for the SDK, 
-        whereas "node lb-xm d:\someserver\server\server.js c sdk.dll" will compile an sdk DLL.
+        whereas "node lb-xm d:\someserver\server\server.js dll" will compile an sdk DLL.
+		To ensure compatibility with Xamarin-Forms, add the flag 'forms', e.g. "node lb-xm d:\someserver\server\server.js forms".
         In addition we have the C# part of the code, accessed by LBXamarinSDK.sln, and source files in C# directory. 
         This contains the open source of the c# part of the generator. This project's end result is 'LBXamarinSDKGenerator.dll' which
         is placed automatically as a post build event inside 'bin'. 
@@ -33,8 +34,8 @@ Creation of Loopback SDK for Xamarin Studio or C# project.
 	
 * After Setup 
 
-        To compile an SDK, make sure you have all the dependencies and run "node lb-xm d:\someserver\server\server.js c sdk.dll" in shell, 
-        where first parameter is the server.js file of the Loopback server, 'c' is a compilation flag and sdk.dll is the filename of the output compiled SDK.
+        To compile an SDK, make sure you have all the dependencies and run "node lb-xm d:\someserver\server\server.js dll" in shell, 
+        where first parameter is the server.js file of the Loopback server, 'dll' is a DLL compilation flag.
         To review the C# part of the Generator (Source code of lb-xm/bin/LBXamarinSDKGenerator.dll), take a look at the LBXamarinSDK.sln solution.
         To review the example App using a compiled SDK, take the folder "SDK Example". This folder in turn contains a Loopback server and a Xamarin solution of an Android App using the SDK.
 
