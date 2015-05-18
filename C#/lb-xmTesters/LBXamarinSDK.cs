@@ -16,8 +16,11 @@ using LBXamarinSDK.LBRepo;
 using System.Net.Http;
 using System.Threading;
 using System.Net;
-using System.Net.Sockets;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json.Converters;
+using RestSharp.Portable.Deserializers;
+using System.Diagnostics;
+using System.Net.Sockets;
 
 namespace LBXamarinSDK
 {
@@ -30,6 +33,31 @@ namespace LBXamarinSDK
 		private static bool _debugMode = false;
         private static CancellationTokenSource _cts = new CancellationTokenSource();
 		private static int _timeout = 6000;
+		private static bool initFlag = false;
+
+		// Custom deserializer to handle timezones formats sent from loopback
+		private class CustomConverter : IDeserializer
+        {
+            private static readonly JsonSerializerSettings SerializerSettings;
+            static CustomConverter ()
+            {
+                SerializerSettings = new JsonSerializerSettings
+                {
+                    DateTimeZoneHandling = DateTimeZoneHandling.Local,
+                    Converters = new List<JsonConverter> { new IsoDateTimeConverter() },
+                    NullValueHandling = NullValueHandling.Ignore
+                };
+            }
+
+            public T Deserialize<T>(IRestResponse response)
+            {
+                var type = typeof(T);
+                var rawBytes = response.RawBytes;
+                return (T)JsonConvert.DeserializeObject (UTF8Encoding.UTF8.GetString (rawBytes, 0, rawBytes.Length), type, SerializerSettings);
+            }
+
+            public System.Net.Http.Headers.MediaTypeHeaderValue ContentType { get; set; }
+        }
 
 		// Allow Console WriteLines to debug communication with server
 		public static void SetDebugMode(bool isDebugMode)
@@ -37,11 +65,30 @@ namespace LBXamarinSDK
 			_debugMode = isDebugMode;
 			if(_debugMode)
 			{
-				Console.WriteLine("******************************");
-				Console.WriteLine("** SDK Gateway Debug Mode.  **");
-				Console.WriteLine("******************************\n");
+				Debug.WriteLine("******************************");
+				Debug.WriteLine("** SDK Gateway Debug Mode.  **");
+				Debug.WriteLine("******************************\n");
 			}
 		}
+
+		// Sets the server URL to the local address
+		public static void SetServerBaseURLToSelf()
+        {
+            var firstOrDefault = Dns.GetHostEntry(Dns.GetHostName()).AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
+            if (firstOrDefault != null)
+            {
+                string adrStr = "http://" + firstOrDefault.ToString() + ":3000/api/";
+                if (_debugMode)
+                    Debug.WriteLine("-------- >> DEBUG: Setting Gateway URL to " + adrStr);
+                SetServerBaseURL(new Uri(adrStr));
+            }
+            else
+            {
+                if (_debugMode)
+                    Debug.WriteLine("-------- >> DEBUG: Error finding self URL.");
+                throw new Exception();
+            }
+        }
 
 		// Debug mode getter
 		public static bool GetDebugMode()
@@ -69,25 +116,6 @@ namespace LBXamarinSDK
             BASE_URL = baseUrl;
             _client.BaseUrl = baseUrl;
         }
-
-		// Define server Base Url for API requests to self local IP
-		public static void SetServerBaseURLToSelf()
-		{
-			var firstOrDefault = Dns.GetHostEntry(Dns.GetHostName()).AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
-            if (firstOrDefault != null)
-            { 
-                string adrStr = "http://" + firstOrDefault.ToString() + ":3000/api/";
-				if (_debugMode)
-                    Console.WriteLine("-------- >> DEBUG: Setting Gateway URL to " + adrStr);	
-                SetServerBaseURL(new Uri(adrStr));
-            }
-			else
-			{
-				if (_debugMode)
-                    Console.WriteLine("-------- >> DEBUG: Error finding self URL.");
-				throw new Exception();
-			}
-		}
 
 		// Sets an access token to be added as an authorization in all future server requests
         public static void SetAccessToken(AccessToken accessToken)
@@ -123,7 +151,7 @@ namespace LBXamarinSDK
 			catch(Exception e)
 			{
 				if (_debugMode)
-                    Console.WriteLine("-------- >> DEBUG: Error: " + e.Message + " >>");	 
+                    Debug.WriteLine("-------- >> DEBUG: Error: " + e.Message + " >>");	 
 				return false;
 			}
 		}
@@ -140,6 +168,12 @@ namespace LBXamarinSDK
             ResetCancellationToken();
 			_cts.Token.ThrowIfCancellationRequested();
 
+			if(!initFlag)
+			{
+				_client.ReplaceHandler(typeof(JsonDeserializer), new CustomConverter());
+				initFlag = true;
+			}
+
 			var response = await _client.Execute<T>(request, _cts.Token).ConfigureAwait(false);
 		    return response.Data;
 		}
@@ -152,7 +186,7 @@ namespace LBXamarinSDK
             request = new RestRequest(APIUrl, new HttpMethod(method));
 
             if(_debugMode)
-                Console.WriteLine("-------- >> DEBUG: Performing " + method + " request at URL: '" + _client.BuildUri(request) + "', Json: " + (string.IsNullOrEmpty(json) ? "EMPTY" : json));
+                Debug.WriteLine("-------- >> DEBUG: Performing " + method + " request at URL: '" + _client.BuildUri(request) + "', Json: " + (string.IsNullOrEmpty(json) ? "EMPTY" : json));
 
 			// Add query parameters to the request
             if (queryStrings != null)
@@ -188,7 +222,7 @@ namespace LBXamarinSDK
             catch(Exception e)
 			{
                 if (_debugMode)
-                    Console.WriteLine("-------- >> DEBUG: Error performing request: " + e.Message + " >>");
+                    Debug.WriteLine("-------- >> DEBUG: Error performing request: " + e.Message + " >>");
 				throw new RestException(e.Message);
 			}     
             
@@ -404,7 +438,7 @@ namespace LBXamarinSDK
 				if(!APIDictionary.ContainsKey(dictionaryKey))
 				{
 					if(Gateway.GetDebugMode())
-						Console.WriteLine("Error - no known CRUD path for " + dictionaryKey);
+						Debug.WriteLine("Error - no known CRUD path for " + dictionaryKey);
 					throw new Exception();
 				}
 				return APIDictionary[dictionaryKey];
