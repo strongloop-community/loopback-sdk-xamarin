@@ -8,6 +8,7 @@ using System.IO;
 using LBXamarinSDK;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 /**
  * Created at Perfected Tech, 2015
@@ -66,13 +67,32 @@ namespace LBXamarinSDKGenerator
             }
         }
 
+
+        /**
+         * Handles errors of unsopprted features in the SDK.
+         * The convention is {.{.error message.}.} in the code.
+         */
+        public bool handleUnsupported(string code)
+        {
+            Regex errRegex = new Regex(@"\{\.\{\.(.+)\.\}\.\}");
+            if (errRegex.IsMatch(code)) 
+            {
+                Match match = errRegex.Match(code);
+                Console.WriteLine(">> " + match.Groups[1].Value);
+                return false;
+            }
+            else
+            {
+                return true;
+            }   
+        }
+
         /*
          * This function is called through Edge.JS by lb-xm.js. 
          * A Json definitions is passed and a DLL or CS code for the SDK is created as a result.
          */
         public async Task<object> Invoke(object input)
         {
-            
             // Get json definition of the server
             string jsonModel = ((Object[])input)[0].ToString();
             // WriteDefinitionsDebug(jsonModel);
@@ -113,6 +133,11 @@ namespace LBXamarinSDKGenerator
 
             string code = constantCode.TransformText() + dynamicReposTemplate.TransformText() +
                           dynamicModelsTemplate.TransformText();
+
+            if(!handleUnsupported(code))
+            {
+                return false;
+            }
 
             if (flags.Contains("dll"))
             {

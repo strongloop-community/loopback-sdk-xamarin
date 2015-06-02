@@ -229,8 +229,15 @@ foreach (var model in modelsJSON.First.First)
 					continue;
 				}
 
-				//string returnTypeOrig = ((String)methodJsonToken.First.ElementAt(3).First.First);
 				string returnTypeOrig = initialParseReturnType((string)rawMethodData.First.First.ElementAt(3).First.First);
+
+				// Two return arguments are not supported yet
+				if(returnTypeOrig.ToLower() == "more_than_one_return_arg")
+                {
+					#>{.{.Two return arguments are not yet supported in the SDK. (method <#=methodName#> of model <#=modelName#>).}.}<#
+					break;
+                }
+
 				bool jsonIsArraySpecification = rawMethodData.First.First.ElementAt(3).First.Count() > 0 ? (bool)rawMethodData.First.First.ElementAt(3).First.ElementAt(1).First : false;
                 bool returnTypeIsArray = determineReturnIsArray(jsonIsArraySpecification, returnTypeOrig);
 				string returnType = finalParseReturnType(returnTypeOrig, returnTypeIsArray);
