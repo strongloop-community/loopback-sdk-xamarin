@@ -21,17 +21,10 @@ Creation of Loopback SDK for Xamarin Studio or C# project.
 
 ### How do I get set up? ###
 
-* On Windows 
+* On Windows / MacOS
 
-        1. Run 'npm install' in shell.
+        Run 'npm install' in shell.
 
-* On MacOS 
-
-        1. Have Homebrew installed - 'ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'.
-        2. If you don't have Mono x64 installed, run 'brew install https://raw.githubusercontent.com/tjanczuk/edge/master/tools/mono64.rb' in shell.
-        3. run 'brew install pkg-config'.
-        4. run 'npm install'.
-	
 * After Setup 
 
         To compile an SDK, make sure you have all the dependencies and run "node lb-xm d:\someserver\server\server.js dll" in shell, 
