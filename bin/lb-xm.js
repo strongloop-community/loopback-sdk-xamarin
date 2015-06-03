@@ -11,11 +11,12 @@ var edge = require ('edge');
 var argv = optimist
   .usage('Generate an SDK for Loopback in C#.' +
     '\n\nUsage: node lb-xm [server_path] [flags]' +
-    '\nSupported flags: ' +
-    '\n \tdll\t\t Compile a dll containing the SDK' +
-    '\n \tforms\t\t Ensure compatibility with Xamarin-Forms' +
-    '\n\n   E.g. "node lb-xm c:/testServer/server/server.js" outputs a CS file.' +
-    '\n   E.g. "node lb-xm c:/testServer/server/server.js dll" outputs a compiled dll of the SDK.')
+    '\n\nSupported flags: ' +
+    '\n\n\tdll\t\t Compile a dll containing the SDK' +
+    '\n\tforms\t\t Ensure compatibility with Xamarin-Forms' +
+    '\n\tforce\t\t Remove unsupported functions' +
+    '\n\nE.g. "node lb-xm c:/testServer/server/server.js" outputs a CS file.' +
+    '\nE.g. "node lb-xm c:/testServer/server/server.js dll" outputs a compiled dll.')
   .demand(1)
   .argv;
 
@@ -35,7 +36,8 @@ console.log('>> Server parsed, templating code...');
 var sdkCreationFunction = edge.func(__dirname + '/LBXamarinSDKGenerator.dll');
 var flagA = argv._[1];
 var flagB = argv._[2];
-var params = [result, flagA, flagB, __dirname];
+var flagC = argv._[3];
+var params = [result, flagA, flagB, __dirname, flagC];
 
 if(sdkCreationFunction(params, true)) {
   console.log('>> Done.');

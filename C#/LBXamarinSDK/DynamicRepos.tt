@@ -12,6 +12,7 @@
 <#@ import namespace="Newtonsoft.Json" #>
 <#@ import namespace="Newtonsoft.Json.Linq" #>
 <#@ parameter name="jsonModel" type="System.String" #>
+<#@ parameter name="force" type="System.Boolean" #>
 <#
 // Uncomment the following line when debugging:
 //string jsonModel = File.ReadAllText("D:/debug.txt");
@@ -231,12 +232,11 @@ foreach (var model in modelsJSON.First.First)
 
 				string returnTypeOrig = initialParseReturnType((string)rawMethodData.First.First.ElementAt(3).First.First);
 
-				// Two return arguments are not supported yet
-				if(returnTypeOrig.ToLower() == "more_than_one_return_arg")
-                {
-					#>{.{.Two return arguments are not yet supported in the SDK. (method <#=methodName#> of model <#=modelName#>).}.}<#
-					break;
-                }
+				// Force removal of this method if it is not supported yet
+				if(force && errMessages.ContainsKey(returnTypeOrig.ToLower()))
+				{
+					continue;
+				}
 
 				bool jsonIsArraySpecification = rawMethodData.First.First.ElementAt(3).First.Count() > 0 ? (bool)rawMethodData.First.First.ElementAt(3).First.ElementAt(1).First : false;
                 bool returnTypeIsArray = determineReturnIsArray(jsonIsArraySpecification, returnTypeOrig);
@@ -255,6 +255,9 @@ foreach (var model in modelsJSON.First.First)
 
 			/*
 			 * <#= rawMethodData.First.First.ElementAt(4).First.ToString() #>
+<# if(errMessages.ContainsKey(returnTypeOrig.ToLower())) {#>
+			 * {.{.<#=errMessages[returnTypeOrig.ToLower()]#> at method <#=methodName#> of model <#=modelName#>..}.}
+<#}#>
 			 */
 			public static async Task<#=returnType#> <#=presentableMethodName#>(<#
 
@@ -321,7 +324,13 @@ foreach (var model in modelsJSON.First.First)
 	}
 }
 
-<#+	
+<#+
+		public static IDictionary<string, string> errMessages = new Dictionary<string, string>()
+		{
+			{"more_than_one_return_arg", "Two return arguments"}
+		};
+
+
 		// Determines the return type of the response and what should be extracted from it to be returned to caller for a specific method REST call
 		private static void determineReturnStatementAndTemplate(ref string returnStatementString, ref string templatesString, string returnTypeOrig, bool returnTypeIsArray, bool returnIsRoot)
 		{
