@@ -15,6 +15,7 @@ var argv = optimist
     '\n\n\tdll\t\t Compile a dll containing the SDK' +
     '\n\tforms\t\t Ensure compatibility with Xamarin-Forms' +
     '\n\tforce\t\t Remove unsupported functions' +
+    '\n\tcheck\t\t Check if the SDK compiles successfully as C# code' +
     '\n\nE.g. "node lb-xm c:/testServer/server/server.js" outputs a CS file.' +
     '\nE.g. "node lb-xm c:/testServer/server/server.js dll" outputs a compiled dll.')
   .demand(1)
@@ -37,7 +38,9 @@ var sdkCreationFunction = edge.func(__dirname + '/LBXamarinSDKGenerator.dll');
 var flagA = argv._[1];
 var flagB = argv._[2];
 var flagC = argv._[3];
-var params = [result, flagA, flagB, __dirname, flagC];
+var flagD = argv._[4];
+var flagE = argv._[5];
+var params = [result, flagA, flagB, __dirname, flagC, flagD, flagE];
 
 if(sdkCreationFunction(params, true)) {
   console.log('>> Done.');
@@ -45,14 +48,11 @@ if(sdkCreationFunction(params, true)) {
   console.log('>> Done with errors.');
 };
 
-
-
 process.nextTick(function() {
   process.exit();
 });
 
 //--- helpers ---//
-
 function assertLoopBackVersion() {
   var Module = require('module');
   // Load the 'loopback' module in the context of the app.js file,

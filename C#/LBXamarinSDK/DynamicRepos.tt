@@ -51,6 +51,14 @@ IList<string> crudsList = new List<string>()
 	"prototype$updateattributes"  
 };
 
+List<string> modelNames = modelsJSON.First.First.Select(p=>p.First.First.ToString().ToLower()).ToList();
+modelNames.Add("accesstoken");
+foreach (var model in modelsJSON.First.First)
+{
+	foreach(var rel in model.ElementAt(6).First) 
+		if(rel != null && (string)rel.First.ElementAt(2).First == "hasAndBelongsToMany") 
+			modelNames.Add(((string)model.First.First + (string)rel.First.ElementAt(1)).ToLower());
+}
 
 foreach (var model in modelsJSON.First.First)
 {
@@ -231,13 +239,6 @@ foreach (var model in modelsJSON.First.First)
 				}
 
 				string returnTypeOrig = initialParseReturnType((string)rawMethodData.First.First.ElementAt(3).First.First);
-
-				// Force removal of this method if it is not supported yet
-				if(force && errMessages.ContainsKey(returnTypeOrig.ToLower()))
-				{
-					continue;
-				}
-
 				bool jsonIsArraySpecification = rawMethodData.First.First.ElementAt(3).First.Count() > 0 ? (bool)rawMethodData.First.First.ElementAt(3).First.ElementAt(1).First : false;
                 bool returnTypeIsArray = determineReturnIsArray(jsonIsArraySpecification, returnTypeOrig);
 				string returnType = finalParseReturnType(returnTypeOrig, returnTypeIsArray);
@@ -249,6 +250,12 @@ foreach (var model in modelsJSON.First.First)
                 List<string> paramsTypes = paramsRawData.PropertyValues().Select(p => p.First.First.ToString()).ToList();
                 List<string> paramsPlacements = paramsRawData.PropertyValues().Select(p => p.ElementAt(1).First.ToString()).ToList();
 
+				// Force removal of this method if it is not supported yet
+				if(force && (errMessages.ContainsKey(returnTypeOrig.ToLower()) || paramsPlacements.Where(p=>p=="body").ToList().Count > 1 || isUnknownType(returnTypeOrig, modelNames)))
+				{
+					continue;
+				}
+
 				// Create a presentable, meaningful and C# legal method name. TODO: Improve the method naming to be more meaningful and distinct
 				string presentableMethodName = createPresentableMethodName(methodName, ref parsedMethodNames);
 #>
@@ -256,7 +263,14 @@ foreach (var model in modelsJSON.First.First)
 			/*
 			 * <#= rawMethodData.First.First.ElementAt(4).First.ToString() #>
 <# if(errMessages.ContainsKey(returnTypeOrig.ToLower())) {#>
-			 * {.{.<#=errMessages[returnTypeOrig.ToLower()]#> at method <#=methodName#> of model <#=modelName#>..}.}
+			 * {.{.Error: <#=errMessages[returnTypeOrig.ToLower()]#> at <#=modelName#>'s <#=presentableMethodName#>().}.}
+<#}#>
+<# if(paramsPlacements.Where(p=>p=="body").ToList().Count > 1) {#>
+			 * {.{.Error: <#=errMessages["more_than_one_body_param"]#> at <#=modelName#>'s <#=presentableMethodName#>().}.}
+<#}#>
+<# if(isUnknownType(returnTypeOrig, modelNames)) {#>
+			 * {.{.Error: <#=errMessages["unknown_model"]#> '<#=returnTypeOrig#>' at <#=modelName#>'s <#=presentableMethodName#>().}.}
+			 * {.{.       Is it defined in model-config.json as public?.}.}
 <#}#>
 			 */
 			public static async Task<#=returnType#> <#=presentableMethodName#>(<#
@@ -325,9 +339,27 @@ foreach (var model in modelsJSON.First.First)
 }
 
 <#+
+
+		public static bool isUnknownType(string returnTypeOrig, List<string> modelNames)
+		{
+			if(!errMessages.ContainsKey(returnTypeOrig.ToLower()) 
+				&& !modelNames.Contains(returnTypeOrig.ToLower()) 
+				&& !isPrimitive(returnTypeOrig) 
+				&& returnTypeOrig != "void" 
+				&& returnTypeOrig.ToLower() != "jobject" 
+				&& returnTypeOrig.ToLower() != "array"
+				&& returnTypeOrig.ToLower() != "lbmodel")
+				{
+					return true;
+				}
+			return false;
+		}
+
 		public static IDictionary<string, string> errMessages = new Dictionary<string, string>()
 		{
-			{"more_than_one_return_arg", "Two return arguments"}
+			{"more_than_one_return_arg", "Two return arguments"},
+			{"more_than_one_body_param", "More than one body parameter"},
+			{"unknown_model", "Unknown model"}
 		};
 
 
