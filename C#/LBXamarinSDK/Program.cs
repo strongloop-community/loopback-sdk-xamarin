@@ -75,7 +75,6 @@ namespace LBXamarinSDKGenerator
          */
         public bool handleUnsupported(string code)
         {
-            //Regex errRegex = new Regex(@"\{\.\{\.(.+)\.\}\.\}");
             Regex errRegex = new Regex(@"\{\.\{\.([a-zA-Z0-9 \(\)\.\,]+)\.\}\.\}");
             if (errRegex.IsMatch(code)) 
             {
