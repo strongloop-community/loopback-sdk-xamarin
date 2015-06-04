@@ -40,7 +40,7 @@ var flagB = argv._[2];
 var flagC = argv._[3];
 var flagD = argv._[4];
 var flagE = argv._[5];
-var params = [result, flagA, flagB, __dirname, flagC, flagD, flagE];
+var params = [result, __dirname, flagA, flagB, flagC, flagD, flagE];
 
 if(sdkCreationFunction(params, true)) {
   console.log('>> Done.');

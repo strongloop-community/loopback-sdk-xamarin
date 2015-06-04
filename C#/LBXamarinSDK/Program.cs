@@ -22,6 +22,7 @@ namespace LBXamarinSDKGenerator
     public class Startup
     {
         private const string outputFolder = "output";
+
         /**
         * Debug Tool
         */
@@ -79,7 +80,8 @@ namespace LBXamarinSDKGenerator
          */
         public bool handleUnsupported(string code)
         {
-            Regex errRegex = new Regex(@"\{\.\{\.([a-zA-Z0-9 \(\)\.\,\'\?_\-\:]+)\.\}\.\}");
+            // Regex is {.{. Message with all chars except '{', '}' chars .}.}
+            Regex errRegex = new Regex(@"{.{.([^{}]+).}.}");
             if (errRegex.IsMatch(code)) 
             {
                 foreach (Match errMatch in errRegex.Matches(code))
@@ -99,18 +101,12 @@ namespace LBXamarinSDKGenerator
          */
         public async Task<object> Invoke(object input)
         {
-            // Get json definition of the server
-            string jsonModel = ((Object[])input)[0].ToString();
-            
             // Process flags
-            var flags = new HashSet<string>()
-            {
-                (((Object[])input)[1] ?? "").ToString(),
-                (((Object[])input)[2] ?? "").ToString(),
-                (((Object[])input)[4] ?? "").ToString(),
-                (((Object[])input)[5] ?? "").ToString(),
-                (((Object[])input)[6] ?? "").ToString()
-            };
+            var inputs = ((Object[])input).Where(p => p != null).Select(p => p.ToString()).ToArray();
+            var flags = new HashSet<string>(inputs.Skip(2));
+
+            // Get json definition of the server
+            string jsonModel = inputs[0];
 
             if (flags.Contains("debug"))
             {
@@ -163,7 +159,7 @@ namespace LBXamarinSDKGenerator
             }
 
             Directory.CreateDirectory(outputFolder);
-            string currentPath = ((Object[])input)[3].ToString();
+            string currentPath = inputs[1];
             if (flags.Contains("dll"))
             {
                 Console.WriteLine(">> Compiling...");
@@ -171,15 +167,18 @@ namespace LBXamarinSDKGenerator
             }
             else
             {
-                if (flags.Contains("check") && !await Compile(code, null, currentPath))
+                if (flags.Contains("check"))
                 {
-                    Console.WriteLine(">> Check: Failed.");
-                    return false;
-                }
-                else
-                {
-                    Console.WriteLine(">> Check: Successful.");
-                }
+                    if (await Compile(code, null, currentPath))
+                    {
+                        Console.WriteLine(">> Check: Successful.");
+                    }
+                    else 
+                    {
+                        Console.WriteLine(">> Check: Failed.");
+                        return false;
+                    }
+                } 
                 Console.WriteLine(">> Writing CS file: " + outputFolder + "/LBXamarinSDK.cs...");
                 System.IO.StreamWriter file = new System.IO.StreamWriter(outputFolder + "/LBXamarinSDK.cs");
                 file.Write(code);
