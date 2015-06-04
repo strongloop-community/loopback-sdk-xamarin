@@ -1,6 +1,6 @@
 {
   "name": "loopback-sdk-xm",
-  "version": "1.1.4",
+  "version": "1.0.0",
   "description": "Tool to create a C# SDK for a Loopback server",
   "scripts": {
     "preinstall": "node macsetup.js"
@@ -13,7 +13,7 @@
   },
   "dependencies": {
 	"node-gyp": "^1.0.3",
-    "edge": "^0.9.3",
+    "edge": "^0.10.1",
     "ejs": "^1.0.0",
     "express": "3.x",
     "optimist": "^0.6.1",

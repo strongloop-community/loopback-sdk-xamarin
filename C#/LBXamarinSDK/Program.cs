@@ -21,13 +21,15 @@ namespace LBXamarinSDKGenerator
 {
     public class Startup
     {
+        private const string outputFolder = "output";
+
         /**
         * Debug Tool
         */
         public void WriteDefinitionsDebug(string jsonModel)
         {
-            string outputPath = "D:" + ("\\lb-xmServerDefinition" + DateTime.Now + ".txt").Replace(" ", "-").Replace(":", ".");
-            Console.WriteLine(">> Writing server Json definition to " + outputPath);
+            string outputPath = outputFolder + ("/lb-xm-def-" + DateTime.Now + ".txt").Replace(" ", "-").Replace(":", ".");
+            Console.WriteLine(">> Writing server definition to " + outputPath);
             System.IO.StreamWriter file = new System.IO.StreamWriter(outputPath);
             file.Write(jsonModel);
             file.Close();
@@ -53,32 +55,38 @@ namespace LBXamarinSDKGenerator
             // Print messages 
             if (result.Errors.Count == 0)
             {
-                Console.WriteLine(">> Loopback Xamarin SDK DLL: " + outputPath + " compiled successfully.");
+                if(outputPath != null)
+                    Console.WriteLine(">> Loopback Xamarin SDK DLL: " + outputPath + " compiled successfully.");
                 return true;
             }
             else
             {
-                Console.WriteLine(">> Loopback Xamarin SDK DLL Compilation errors:");
-                foreach (var err in result.Errors)
+                if (outputPath != null)
                 {
-                    Console.WriteLine(">> " + err.ToString());
-                }
+                    Console.WriteLine(">> Loopback Xamarin SDK DLL Compilation errors:");
+                    foreach (var err in result.Errors)
+                    {
+                        Console.WriteLine(">> " + err.ToString());
+                    }
+                }   
                 return false;
             }
         }
 
 
         /**
-         * Handles errors of unsopprted features in the SDK.
+         * Handles errors of unsupported features in the SDK.
          * The convention is {.{.error message.}.} in the code.
          */
         public bool handleUnsupported(string code)
         {
-            Regex errRegex = new Regex(@"\{\.\{\.(.+)\.\}\.\}");
+            // Regex is {.{. Message with all chars except '{', '}' chars .}.}
+            Regex errRegex = new Regex(@"{.{.([^{}]+).}.}");
             if (errRegex.IsMatch(code)) 
             {
-                Match match = errRegex.Match(code);
-                Console.WriteLine(">> " + match.Groups[1].Value);
+                foreach (Match errMatch in errRegex.Matches(code))
+                    Console.WriteLine(">> " + errMatch.Groups[1].Value);
+                Console.WriteLine(">> You can force SDK creation with the flag 'force'.");
                 return false;
             }
             else
@@ -93,16 +101,17 @@ namespace LBXamarinSDKGenerator
          */
         public async Task<object> Invoke(object input)
         {
-            // Get json definition of the server
-            string jsonModel = ((Object[])input)[0].ToString();
-            // WriteDefinitionsDebug(jsonModel);
-
             // Process flags
-            var flags = new HashSet<string>()
+            var inputs = ((Object[])input).Where(p => p != null).Select(p => p.ToString()).ToArray();
+            var flags = new HashSet<string>(inputs.Skip(2));
+
+            // Get json definition of the server
+            string jsonModel = inputs[0];
+
+            if (flags.Contains("debug"))
             {
-                (((Object[])input)[1] ?? "").ToString(),
-                (((Object[])input)[2] ?? "").ToString()
-            };
+                WriteDefinitionsDebug(jsonModel);
+            }
 
             // Create new templates and pass the definition Json to DynamicModels and DynamicRepos
             var dynamicModelsTemplate = new DynamicModels();
@@ -126,6 +135,16 @@ namespace LBXamarinSDKGenerator
                 constantCode.Session["XamarinForms"] = false;
             }
 
+            if (flags.Contains("force"))
+            {
+                Console.WriteLine(">> Forcing SDK creation...");
+                dynamicReposTemplate.Session["force"] = true;
+            }
+            else
+            {
+                dynamicReposTemplate.Session["force"] = false;
+            }
+
             // Create dynamic code from templates
             dynamicModelsTemplate.Initialize();
             dynamicReposTemplate.Initialize();
@@ -134,28 +153,40 @@ namespace LBXamarinSDKGenerator
             string code = constantCode.TransformText() + dynamicReposTemplate.TransformText() +
                           dynamicModelsTemplate.TransformText();
 
-            if(!handleUnsupported(code))
+            if(!flags.Contains("force") && !handleUnsupported(code))
             {
                 return false;
             }
 
+            Directory.CreateDirectory(outputFolder);
+            string currentPath = inputs[1];
             if (flags.Contains("dll"))
             {
                 Console.WriteLine(">> Compiling...");
-                string currentPath = ((Object[]) input)[3].ToString();
-                return await Compile(code, "LBXamarinSDK.dll", currentPath);
+                return await Compile(code, outputFolder + "/LBXamarinSDK.dll", currentPath);
             }
             else
             {
-                Console.WriteLine(">> Writing CS file: LBXamarinSDK.cs...");
-                System.IO.StreamWriter file = new System.IO.StreamWriter("LBXamarinSDK.cs");
+                if (flags.Contains("check"))
+                {
+                    if (await Compile(code, null, currentPath))
+                    {
+                        Console.WriteLine(">> Check: Successful.");
+                    }
+                    else 
+                    {
+                        Console.WriteLine(">> Check: Failed.");
+                        return false;
+                    }
+                } 
+                Console.WriteLine(">> Writing CS file: " + outputFolder + "/LBXamarinSDK.cs...");
+                System.IO.StreamWriter file = new System.IO.StreamWriter(outputFolder + "/LBXamarinSDK.cs");
                 file.Write(code);
                 file.Close();
                 return true;
             }
         }
     }
-
 }
 
 
