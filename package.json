@@ -12,11 +12,22 @@
     "node": ">= 0.8.0"
   },
   "dependencies": {
-	"node-gyp": "^1.0.3",
+    "node-gyp": "^1.0.3",
     "edge": "^0.10.1",
     "ejs": "^1.0.0",
     "express": "3.x",
     "optimist": "^0.6.1",
     "semver": "^2.2.1"
-  }
+  },
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/strongloop/loopback-sdk-xamarin.git"
+  },
+  "author": "StrongLoop <callback@strongloop.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/strongloop/loopback-sdk-xamarin/issues"
+  },
+  "homepage": "https://github.com/strongloop/loopback-sdk-xamarin"
 }
