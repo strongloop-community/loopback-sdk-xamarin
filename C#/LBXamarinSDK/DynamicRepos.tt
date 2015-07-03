@@ -455,6 +455,8 @@ foreach (var model in modelsJSON.First.First)
 
 			if(input == "double")
 				return true;
+			if(input == "date" || input == "datetime")
+				return true;
 			if(input == "string")
 				return true;
 			if(input == "bool")
@@ -471,6 +473,8 @@ foreach (var model in modelsJSON.First.First)
 			if(someType != null)
 				input = someType.ToLower();
 
+			if(input == "datetime")
+				return true;
 			if(input == "double")
 				return true;
 			if(input == "string")
@@ -492,6 +496,8 @@ foreach (var model in modelsJSON.First.First)
 
 			if(input == "number")
 				return "double";
+			if(input == "date")
+				return "DateTime";
 			if(input == "string")
 				return "string";
 			if(input == "boolean")
