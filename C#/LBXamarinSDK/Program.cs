@@ -28,6 +28,7 @@ namespace LBXamarinSDKGenerator
         */
         public void WriteDefinitionsDebug(string jsonModel)
         {
+            Directory.CreateDirectory(outputFolder);
             string outputPath = outputFolder + ("/lb-xm-def-" + DateTime.Now + ".txt").Replace(" ", "-").Replace(":", ".");
             Console.WriteLine(">> Writing server definition to " + outputPath);
             System.IO.StreamWriter file = new System.IO.StreamWriter(outputPath);
