@@ -1,4 +1,4 @@
-# Loopback SDK for Xamarin Studio or C# project
+# Loopback SDK for Xamarin
 
 The repository contains the LoopBack Xamarin SDK, including the `lb-xm` script that
 creates a Xamarin client to call a LoopBack server backend API.
