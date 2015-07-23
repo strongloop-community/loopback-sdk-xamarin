@@ -231,6 +231,12 @@ foreach (var model in modelsJSON.First.First)
 				var rawMethodData = JObject.Parse("{" + methodJsonToken + "}");
                 string methodName = rawMethodData.Properties().Select(p => p.Name).ToList()[0].ToString();
 
+				// Create Change Stream methods, still unsupported. Remove this if clause when adding support for them.
+				if(methodName == "createChangeStream")
+                {
+					continue;
+                }
+
 				if (crudsList.Contains(methodName.ToLower()))
 				{
 					// Skip Crud methods, they're already included as inherited members from hardcoded CRUDInterface
