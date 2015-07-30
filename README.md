@@ -22,8 +22,8 @@ node lb-xm d:\someserver\server\server.js dll
 Where the first parameter is the main application file of the Loopback server, and `dll` is a DLL compilation flag.
 
 To review the C# part of the generator (source code of lb-xm/bin/LBXamarinSDKGenerator.dll), look at the `LBXamarinSDK.sln` solution.
-To review the example app using a compiled SDK, see the folder "SDK Example".
-This folder contains a LoopBack server and a Xamarin solution of an Android app using the SDK.
+To review simple example apps using a compiled SDK, see the folder "examples".
+This folder contains a LoopBack server and a Xamarin solution of an Android app using the SDK, and a second LoopBack server and a Visual Studio solution of a console application using the SDK.
 
 ## Basic procedure ##
 
