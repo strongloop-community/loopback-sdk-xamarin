@@ -9,13 +9,15 @@ C#/LBXamarinSDK/HardcodedModels.cs
 C#/LBXamarinSDK/bin/
 C#/LBXamarinSDK/obj/
 C#/LBXamarinSDK/packages/
-documentation/HelloWorld/SDKHelloWorld/bin
-documentation/HelloWorld/SDKHelloWorld/obj
+examples/HelloWorld/SDKHelloWorld/bin
+examples/HelloWorld/SDKHelloWorld/obj
+examples/HelloWorldServer/node_modules/
+examples/Agents/ExampleApp/bin
+examples/Agents/ExampleApp/obj
+examples/AgentsServer/node_modules/
 bin/output
 packages/
 C#/packages/
 C#/lb-xmTesters/bin/
 C#/lb-xmTesters/obj/
-C#/SDK Example/ExampleApp/obj
-C#/SDK Example/ExampleApp/bin
 test-server/node_modules/
