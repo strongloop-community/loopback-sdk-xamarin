@@ -53,7 +53,7 @@ namespace ConsoleApplication5
             }
             catch (RestException e)
             {
-                Console.WriteLine("Could not create user. Perhaps the Email address is already in use.");
+                Console.WriteLine("Could not create user. Perhaps the Email address is already in use, " + e.StatusCode);
             }
             Console.WriteLine("Logging in:");
 
@@ -66,7 +66,7 @@ namespace ConsoleApplication5
             }
             catch (RestException e)
             {
-                Console.WriteLine("Could nto log in.");
+                Console.WriteLine("Could nto log in, " + e.StatusCode);
             }
 
             Console.WriteLine("Done.");

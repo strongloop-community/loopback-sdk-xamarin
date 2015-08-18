@@ -19,6 +19,8 @@
 JObject modelsJSON = JObject.Parse(jsonModel);
 List<String> modelNames = modelsJSON.First.First.Select(x => (string)x.First).ToList();
 #>
+/** Generated at <#=DateTime.Now#> */
+
 /**
  *** Hardcoded Models ***
  */
@@ -188,19 +190,30 @@ namespace LBXamarinSDK
         
 		// Makes a request through restSharp to server
 		public static async Task<T> MakeRequest<T>(RestRequest request)
-		{
+        {
             ResetCancellationToken();
-			_cts.Token.ThrowIfCancellationRequested();
+            _cts.Token.ThrowIfCancellationRequested();
+            _client.IgnoreResponseStatusCode = true;
 
-			if(!initFlag)
-			{
-				_client.ReplaceHandler(typeof(JsonDeserializer), new CustomConverter());
-				initFlag = true;
-			}
+            if (!initFlag)
+            {
+                _client.ReplaceHandler(typeof(JsonDeserializer), new CustomConverter());
+                initFlag = true;
+            }
 
-			var response = await _client.Execute<T>(request, _cts.Token).ConfigureAwait(false);
-		    return response.Data;
-		}
+            var response = await _client.Execute<JRaw>(request, _cts.Token).ConfigureAwait(false);
+            var responseData = response.Data.ToString();
+            
+            if (!response.IsSuccess)
+            {
+			
+                if(_debugMode)
+                    Debug.WriteLine("-------- >> DEBUG: Error performing request, status code " + (int)response.StatusCode + ", Payload: " + responseData);
+                throw new RestException(responseData, (int)response.StatusCode);
+            }
+
+            return JsonConvert.DeserializeObject<T>(responseData);
+        }
 
 
 		// Parses a server request then makes it through MakeRequest
@@ -238,18 +251,8 @@ namespace LBXamarinSDK
 			}
 
 			// Make the request, return response
-			try
-			{
-				var response = await MakeRequest<T>(request).ConfigureAwait(false);
-				return response;
-			}
-            catch(Exception e)
-			{
-                if (_debugMode)
-                    Debug.WriteLine("-------- >> DEBUG: Error performing request: " + e.Message + " >>");
-				throw new RestException(e.Message);
-			}     
-            
+			var response = await MakeRequest<T>(request).ConfigureAwait(false);
+			return response;
 		}
 
         // T is the expected return type, U is the input type. E.g. U is Car, T is Car
@@ -371,6 +374,11 @@ namespace LBXamarinSDK
 		public RestException(string responseString) : base(responseString)
 		{
 			StatusCode = parseStatusCode(responseString);
+		}
+
+		public RestException(string responseString, int StatusCode) : base(responseString)
+		{
+            this.StatusCode = StatusCode;
 		}
     }
 }
