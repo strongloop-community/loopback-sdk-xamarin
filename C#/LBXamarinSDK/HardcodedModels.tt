@@ -202,7 +202,7 @@ namespace LBXamarinSDK
             }
 
             var response = await _client.Execute<JRaw>(request, _cts.Token).ConfigureAwait(false);
-            var responseData = response.Data.ToString();
+            var responseData = response.Data != null ? response.Data.ToString() : "";
             
             if (!response.IsSuccess)
             {
