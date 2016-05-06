@@ -1,3 +1,8 @@
+// Copyright IBM Corp. 2015. All Rights Reserved.
+// Node module: loopback-sdk-xm
+// This file is licensed under the MIT License.
+// License text available at https://opensource.org/licenses/MIT
+
 var customers = [
   {name: 'Customer A', age: 21},
   {name: 'Customer B', age: 22},
